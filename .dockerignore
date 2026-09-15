@@ -1,0 +1,9 @@
+.git
+.gitignore
+.dockerignore
+.idea
+.vscode
+*.log
+*.tmp
+*.bak
+docker-compose.override.yml

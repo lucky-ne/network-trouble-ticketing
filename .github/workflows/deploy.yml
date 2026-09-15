@@ -1,0 +1,28 @@
+name: Auto Deploy to Ubuntu Server via Docker
+
+on:
+  push:
+    branches:
+      - main  # Setiap kali ada push ke branch main, deploy otomatis berjalan
+
+jobs:
+  deploy:
+    name: Deploy to Ubuntu Docker Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH to Ubuntu Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}        # IP Publik Server Ubuntu Anda
+          username: ${{ secrets.SERVER_USERNAME }} # Username server (misal: ubuntu / root)
+          key: ${{ secrets.SERVER_SSH_KEY }}       # Private SSH Key Anda (atau password)
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            cd /var/www/network-trouble-ticketing
+            git pull origin main
+            sudo docker compose up -d --build
+            echo "Deployment to Ubuntu Server Completed Successfully!"

@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # Web Application Service (PHP 8.2 + Apache)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: net_ticketing_app
+    restart: unless-stopped
+    ports:
+      - "80:80"       # Ubah ke "8080:80" jika port 80 di server Ubuntu sudah dipakai
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_NAME=net_ticketing_db
+      - DB_USER=net_user
+      - DB_PASS=net_pass
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - net_network
+
+  # Database Service (MariaDB 10.11)
+  db:
+    image: mariadb:10.11
+    container_name: net_ticketing_db
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=net_ticketing_db
+      - MYSQL_USER=net_user
+      - MYSQL_PASSWORD=net_pass
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - net_network
+
+  # Database Management Tool (phpMyAdmin)
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: net_ticketing_pma
+    restart: unless-stopped
+    ports:
+      - "8081:80"     # Akses GUI Database di http://IP-SERVER:8081
+    environment:
+      - PMA_HOST=db
+      - PMA_PORT=3306
+      - PMA_USER=root
+      - PMA_PASSWORD=root_password
+      - UPLOAD_LIMIT=64M
+    depends_on:
+      - db
+    networks:
+      - net_network
+
+networks:
+  net_network:
+    driver: bridge
+
+volumes:
+  db_data:
+    driver: local
