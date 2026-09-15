@@ -58,8 +58,8 @@ function base_url($path = '') {
     $parts = explode('/', trim($script_dir, '/'));
     $project_root = '';
     
-    // Jika berada di subfolder (admin, customer, karyawan, helpdesk, teknisi, manager, auth)
-    $subfolders = ['admin', 'customer', 'karyawan', 'helpdesk', 'teknisi', 'manager', 'auth', 'config', 'includes'];
+    // Jika berada di subfolder (admin, customer, helpdesk, teknisi, manager, auth)
+    $subfolders = ['admin', 'customer', 'helpdesk', 'teknisi', 'manager', 'auth', 'config', 'includes'];
     if (!empty($parts) && in_array(end($parts), $subfolders)) {
         array_pop($parts);
     }
