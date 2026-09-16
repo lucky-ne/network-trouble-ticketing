@@ -72,24 +72,16 @@ $categories = $pdo->query("
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="row mb-4">
-    <div class="col-12">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-2">
-                <li class="breadcrumb-item"><a href="<?= base_url('admin/dashboard.php') ?>">Dashboard Admin</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Master Kategori</li>
-            </ol>
-        </nav>
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-                <h3 class="fw-bold mb-0 text-dark"><i class="fas fa-tags text-danger me-2"></i>Master Kategori Gangguan Jaringan</h3>
-                <p class="text-muted small mb-0">Kelola klasifikasi jenis gangguan jaringan (Wi-Fi, LAN, Port, VPN, Server, dll).</p>
-            </div>
-            <button type="button" class="btn btn-primary px-3 py-2 rounded-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalTambahKategori">
-                <i class="fas fa-plus-circle me-1"></i> Tambah Kategori Baru
-            </button>
-        </div>
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+    <div>
+        <h4 class="fw-bold text-dark mb-1">
+            <i class="fas fa-tags text-danger me-2"></i>Master Kategori Gangguan Jaringan
+        </h4>
+        <p class="text-secondary small mb-0">Kelola klasifikasi jenis gangguan jaringan (Wi-Fi, LAN, Port, VPN, Server, dll).</p>
     </div>
+    <button type="button" class="btn btn-primary btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalTambahKategori">
+        <i class="fas fa-plus-circle me-1"></i> Tambah Kategori Baru
+    </button>
 </div>
 
 <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">

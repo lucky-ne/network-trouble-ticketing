@@ -98,28 +98,20 @@ $smtp_from_email     = get_setting('smtp_from_email', '');
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="row mb-4">
-    <div class="col-12">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-2">
-                <li class="breadcrumb-item"><a href="<?= base_url('admin/dashboard.php') ?>">Dashboard Admin</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Pengaturan Website & Notifikasi Gmail</li>
-            </ol>
-        </nav>
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-                <h3 class="fw-bold mb-0 text-dark"><i class="fas fa-sliders-h text-danger me-2"></i>Pengaturan Website & Notifikasi Gmail</h3>
-                <p class="text-muted small mb-0">Kelola identitas sistem, konfigurasi SLA, serta pengaturan notifikasi email otomatis ke Gmail pengguna.</p>
-            </div>
-            <div class="d-flex gap-2">
-                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalTestEmail">
-                    <i class="fas fa-paper-plane me-1"></i> Uji Coba / Tes Kirim Email
-                </button>
-                <a href="<?= base_url('admin/dashboard.php') ?>" class="btn btn-outline-secondary btn-sm">
-                    <i class="fas fa-arrow-left me-1"></i> Kembali ke Dashboard
-                </a>
-            </div>
-        </div>
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+    <div>
+        <h4 class="fw-bold text-dark mb-1">
+            <i class="fas fa-sliders-h text-danger me-2"></i>Pengaturan Website & Notifikasi Gmail
+        </h4>
+        <p class="text-secondary small mb-0">Kelola identitas sistem, konfigurasi SLA, serta pengaturan notifikasi email otomatis ke Gmail pengguna.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalTestEmail">
+            <i class="fas fa-paper-plane me-1"></i> Uji Coba / Tes Kirim Email
+        </button>
+        <a href="<?= base_url('admin/dashboard.php') ?>" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i> Kembali ke Dashboard
+        </a>
     </div>
 </div>
 
