@@ -10,9 +10,21 @@ $current_user = current_user();
 $current_role = $current_user['role'] ?? 'guest';
 $page_title   = $page_title ?? 'Sistem Network Trouble Ticketing & SLA Tracking';
 
-$app_name       = get_setting('app_name', 'VMP-NetTicket');
-$system_version = get_setting('system_version', 'v1.0 Enterprise');
-$company_name   = get_setting('company_name', 'PT. Visimedia Pratama Persada');
+$app_name        = get_setting('app_name', 'VMP-NetTicket');
+$system_version  = get_setting('system_version', 'v1.0 Enterprise');
+$company_name    = get_setting('company_name', 'PT. Visimedia Pratama Persada');
+$company_tagline = get_setting('company_tagline', 'B2B Network Provider & Managed Service Solutions');
+$company_phone   = get_setting('company_phone', '(021) 5854-601 / Hotline NOC: 0812-8340-0422');
+$company_email   = get_setting('company_email', 'support@visimedia.co.id');
+$company_address = get_setting('company_address', '');
+
+$sla_modal_priorities = [];
+try {
+    $pdo_hdr = get_db();
+    $sla_modal_priorities = $pdo_hdr->query("SELECT * FROM priorities ORDER BY sla_hours ASC")->fetchAll();
+} catch (Exception $e) {
+    $sla_modal_priorities = [];
+}
 
 // Helper nama role
 $role_names = [
@@ -74,7 +86,7 @@ if ($current_user && !empty($current_user['name'])) {
                 <span class="text-white fw-semibold"><i class="fas fa-network-wired text-info me-1"></i> <?= htmlspecialchars($app_name) ?></span>
                 <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2 py-0 d-none d-sm-inline-block" style="font-size:0.65rem;"><?= htmlspecialchars($system_version) ?></span>
                 <span class="opacity-25">|</span>
-                <span class="d-none d-md-inline"><i class="fas fa-headset text-warning me-1"></i> NOC 24/7 Hotline: <strong>(021) 5082-8899</strong></span>
+                <span class="d-none d-md-inline"><i class="fas fa-headset text-warning me-1"></i> NOC Hotline: <strong><?= htmlspecialchars($company_phone) ?></strong></span>
                 <span class="opacity-25 d-none d-md-inline">|</span>
                 <?php if ($current_role === 'karyawan'): ?>
                     <span class="d-none d-lg-inline"><i class="fas fa-headset text-success me-1"></i> NOC Support 24/7</span>
@@ -283,7 +295,7 @@ if ($current_user && !empty($current_user['name'])) {
             </div>
             <div class="modal-body p-4">
                 <p class="text-secondary small mb-3">
-                    Berikut adalah matriks komitmen Service Level Agreement (SLA) penanganan gangguan jaringan B2B pada PT. Visimedia Pratama Persada sesuai kontrak layanan pelanggan:
+                    Berikut adalah matriks komitmen Service Level Agreement (SLA) penanganan gangguan jaringan B2B pada <strong><?= htmlspecialchars($company_name) ?></strong> sesuai kontrak layanan pelanggan:
                 </p>
                 <div class="table-responsive mb-3">
                     <table class="table table-bordered table-sm align-middle small mb-0">
@@ -296,40 +308,55 @@ if ($current_user && !empty($current_user['name'])) {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td><span class="badge bg-danger">Critical (P1)</span></td>
-                                <td>Total link down, LOS fiber optik, backbone failure mempengaruhi seluruh cabang klien.</td>
-                                <td>&le; 15 Menit</td>
-                                <td><strong>&le; 1 Jam</strong></td>
-                            </tr>
-                            <tr>
-                                <td><span class="badge bg-warning text-dark">High (P2)</span></td>
-                                <td>High latency (>100ms), packet loss (>5%), flapping BGP routing.</td>
-                                <td>&le; 30 Menit</td>
-                                <td><strong>&le; 2 Jam</strong></td>
-                            </tr>
-                            <tr>
-                                <td><span class="badge bg-primary">Medium (P3)</span></td>
-                                <td>Penurunan throughput bandwidth, intermiten drop pada port CPE.</td>
-                                <td>&le; 1 Jam</td>
-                                <td><strong>&le; 4 Jam</strong></td>
-                            </tr>
-                            <tr>
-                                <td><span class="badge bg-secondary">Low (P4)</span></td>
-                                <td>Permintaan perubahan routing, DNS query, reset password router, atau konsultasi teknis.</td>
-                                <td>&le; 2 Jam</td>
-                                <td><strong>&le; 8 Jam</strong></td>
-                            </tr>
+                            <?php if (!empty($sla_modal_priorities)): ?>
+                                <?php foreach ($sla_modal_priorities as $p_item): ?>
+                                    <tr>
+                                        <td><span class="badge bg-<?= htmlspecialchars($p_item['badge_color'] ?? 'primary') ?>"><?= htmlspecialchars($p_item['name']) ?></span></td>
+                                        <td><?= htmlspecialchars($p_item['description'] ?? '-') ?></td>
+                                        <td>&le; <?= ($p_item['sla_hours'] <= 1 ? '15 Menit' : ($p_item['sla_hours'] <= 2 ? '30 Menit' : ($p_item['sla_hours'] <= 4 ? '1 Jam' : '2 Jam'))) ?></td>
+                                        <td><strong>&le; <?= (int)$p_item['sla_hours'] ?> Jam</strong></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td><span class="badge bg-danger">Critical (P1)</span></td>
+                                    <td>Total link down, LOS fiber optik, backbone failure mempengaruhi seluruh cabang klien.</td>
+                                    <td>&le; 15 Menit</td>
+                                    <td><strong>&le; 1 Jam</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-warning text-dark">High (P2)</span></td>
+                                    <td>High latency (>100ms), packet loss (>5%), flapping BGP routing.</td>
+                                    <td>&le; 30 Menit</td>
+                                    <td><strong>&le; 2 Jam</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-primary">Medium (P3)</span></td>
+                                    <td>Penurunan throughput bandwidth, intermiten drop pada port CPE.</td>
+                                    <td>&le; 1 Jam</td>
+                                    <td><strong>&le; 4 Jam</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge bg-secondary">Low (P4)</span></td>
+                                    <td>Permintaan perubahan routing, DNS query, reset password router, atau konsultasi teknis.</td>
+                                    <td>&le; 2 Jam</td>
+                                    <td><strong>&le; 8 Jam</strong></td>
+                                </tr>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
                 <div class="bg-light p-3 rounded border">
-                    <div class="fw-bold text-dark small mb-1"><i class="fas fa-headset text-primary me-1"></i> Kontak Network Operations Center (NOC 24/7):</div>
+                    <div class="fw-bold text-dark small mb-2"><i class="fas fa-headset text-primary me-1"></i> Kontak Network Operations Center (NOC 24/7) & Dukungan IT:</div>
                     <div class="row g-2 text-secondary small">
-                        <div class="col-md-6">&bull; Hotline Hotline: <strong>(021) 5082-8899</strong></div>
-                        <div class="col-md-6">&bull; Email NOC: <strong>noc@visimedia.co.id</strong></div>
-                        <div class="col-md-6">&bull; WhatsApp Dispatcher: <strong>+62 811-9876-5432</strong></div>
-                        <div class="col-md-6">&bull; Eskalasi Manager: <strong>manager.noc@visimedia.co.id</strong></div>
+                        <div class="col-md-6">&bull; Nomor Telepon / Hotline IT: <strong><?= htmlspecialchars($company_phone) ?></strong></div>
+                        <div class="col-md-6">&bull; Email Helpdesk / NOC: <strong><?= htmlspecialchars($company_email) ?></strong></div>
+                        <?php if (!empty($company_address)): ?>
+                            <div class="col-12 mt-1">&bull; Alamat Kantor: <strong><?= htmlspecialchars($company_address) ?></strong></div>
+                        <?php endif; ?>
+                        <?php if (!empty($company_tagline)): ?>
+                            <div class="col-12">&bull; Layanan: <strong><?= htmlspecialchars($company_tagline) ?></strong></div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

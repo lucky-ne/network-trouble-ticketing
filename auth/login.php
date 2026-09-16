@@ -240,6 +240,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $app_name       = get_setting('app_name', 'VMP-NetTicket');
 $system_version = get_setting('system_version', 'v1.0 Enterprise');
 $company_name   = get_setting('company_name', 'PT. Visimedia Pratama Persada');
+$company_phone  = get_setting('company_phone', '(021) 5854-601 / Hotline NOC: 0812-8340-0422');
+$company_email  = get_setting('company_email', 'support@visimedia.co.id');
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -301,7 +303,7 @@ $company_name   = get_setting('company_name', 'PT. Visimedia Pratama Persada');
                 <span class="text-white fw-semibold"><i class="fas fa-network-wired text-info me-1"></i> <?= htmlspecialchars($app_name) ?></span>
                 <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2 py-0 d-none d-sm-inline-block" style="font-size:0.65rem;"><?= htmlspecialchars($system_version) ?></span>
                 <span class="opacity-25">|</span>
-                <span class="d-none d-md-inline"><i class="fas fa-headset text-warning me-1"></i> NOC 24/7 Hotline: <strong>(021) 5082-8899</strong></span>
+                <span class="d-none d-md-inline"><i class="fas fa-headset text-warning me-1"></i> NOC Hotline: <strong><?= htmlspecialchars($company_phone) ?></strong></span>
             </div>
             <div class="d-flex align-items-center gap-2 text-white-50 small" style="font-size: 0.74rem;">
                 <span class="status-dot me-1"></span>
@@ -467,7 +469,7 @@ $company_name   = get_setting('company_name', 'PT. Visimedia Pratama Persada');
 
                             <div class="mt-4 pt-3 border-top d-flex align-items-center justify-content-between text-secondary" style="font-size: 0.75rem;">
                                 <span>Butuh bantuan akses / kendala login?</span>
-                                <a href="mailto:noc@visimedia.co.id" class="text-decoration-none text-primary fw-medium">
+                                <a href="mailto:<?= htmlspecialchars($company_email) ?>" class="text-decoration-none text-primary fw-medium">
                                     <i class="fas fa-headset me-1"></i> Hubungi NOC (24/7)
                                 </a>
                             </div>
