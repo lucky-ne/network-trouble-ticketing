@@ -6,8 +6,11 @@
     <div class="container text-muted small">
         <div class="row align-items-center">
             <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
-                <span class="fw-semibold text-dark">&copy; <?= date('Y') ?> <?= htmlspecialchars(get_setting('company_name', 'PT. Visimedia Pratama Persada')) ?></span>
-                <span class="d-block text-secondary" style="font-size: 0.76rem;"><?= htmlspecialchars(get_setting('company_tagline', 'B2B Network Provider & Managed Service Solutions')) ?></span>
+                <span class="fw-semibold text-dark">&copy; <?= date('Y') ?> <?= htmlspecialchars(get_setting('company_name', 'PT. Visimedia Pratama Persada')) ?> &bull; <?= htmlspecialchars(get_setting('app_name', 'VMP-NetTicket')) ?></span>
+                <span class="d-block text-secondary" style="font-size: 0.76rem;">
+                    <?= htmlspecialchars(get_setting('company_tagline', 'B2B Network Provider & Managed Service Solutions')) ?>
+                    <span class="badge bg-light text-secondary border px-1 ms-1"><?= htmlspecialchars(get_setting('system_version', 'v1.0 Enterprise')) ?></span>
+                </span>
             </div>
             <div class="col-md-6 text-center text-md-end">
                 <?php if (isset($_SESSION['user'])): ?>

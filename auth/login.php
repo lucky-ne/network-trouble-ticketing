@@ -237,15 +237,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$app_name = get_setting('app_name', 'NetTicket B2B - SLA Tracking');
-$company_name = get_setting('company_name', 'PT. Visimedia Pratama Persada');
+$app_name       = get_setting('app_name', 'VMP-NetTicket');
+$system_version = get_setting('system_version', 'v1.0 Enterprise');
+$company_name   = get_setting('company_name', 'PT. Visimedia Pratama Persada');
 ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($active_portal['title']) ?> - <?= htmlspecialchars($company_name) ?></title>
+    <title><?= htmlspecialchars($active_portal['title']) ?> - <?= htmlspecialchars($app_name) ?> | <?= htmlspecialchars($company_name) ?></title>
     
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -297,7 +298,8 @@ $company_name = get_setting('company_name', 'PT. Visimedia Pratama Persada');
     <div class="top-utility-bar py-1">
         <div class="container d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2 text-white-50 small" style="font-size: 0.74rem;">
-                <span class="text-white fw-semibold"><i class="fas fa-network-wired text-info me-1"></i> Visimedia B2B Network</span>
+                <span class="text-white fw-semibold"><i class="fas fa-network-wired text-info me-1"></i> <?= htmlspecialchars($app_name) ?></span>
+                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2 py-0 d-none d-sm-inline-block" style="font-size:0.65rem;"><?= htmlspecialchars($system_version) ?></span>
                 <span class="opacity-25">|</span>
                 <span class="d-none d-md-inline"><i class="fas fa-headset text-warning me-1"></i> NOC 24/7 Hotline: <strong>(021) 5082-8899</strong></span>
             </div>
@@ -312,11 +314,17 @@ $company_name = get_setting('company_name', 'PT. Visimedia Pratama Persada');
             <a class="navbar-brand d-flex align-items-center py-0" href="<?= base_url('auth/login.php') ?>">
                 <div class="brand-logo-isp">
                     <span class="logo-visi">visi<span class="logo-media">media</span><span class="logo-tld">.id</span></span>
-                    <span class="logo-corp-sub">PT. VISIMEDIA PRATAMA PERSADA</span>
+                    <span class="logo-corp-sub"><?= htmlspecialchars($company_name) ?></span>
+                </div>
+                <div class="border-start ps-2 ms-2 d-none d-sm-block">
+                    <div class="fw-bold text-dark lh-1" style="font-size: 0.88rem;"><?= htmlspecialchars($app_name) ?></div>
+                    <span class="badge bg-light text-primary border rounded-pill px-2 py-0 mt-1" style="font-size: 0.65rem; font-weight: 600;">
+                        <i class="fas fa-code-branch me-1"></i><?= htmlspecialchars($system_version) ?>
+                    </span>
                 </div>
             </a>
-            <div class="d-none d-sm-block text-secondary small">
-                <span class="badge bg-light text-dark border"><i class="fas fa-shield-alt text-primary me-1"></i> Sistem Trouble Ticketing & SLA</span>
+            <div class="d-none d-md-flex align-items-center gap-2 text-secondary small">
+                <span class="badge bg-light text-primary border fw-semibold px-2 py-1"><i class="fas fa-shield-alt text-primary me-1"></i> Enterprise B2B SLA Tracking</span>
             </div>
         </div>
     </div>

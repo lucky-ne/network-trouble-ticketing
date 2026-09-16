@@ -10,8 +10,9 @@ $current_user = current_user();
 $current_role = $current_user['role'] ?? 'guest';
 $page_title   = $page_title ?? 'Sistem Network Trouble Ticketing & SLA Tracking';
 
-$app_name     = get_setting('app_name', 'NetTicket B2B');
-$company_name = get_setting('company_name', 'PT. Visimedia Pratama Persada');
+$app_name       = get_setting('app_name', 'VMP-NetTicket');
+$system_version = get_setting('system_version', 'v1.0 Enterprise');
+$company_name   = get_setting('company_name', 'PT. Visimedia Pratama Persada');
 
 // Helper nama role
 $role_names = [
@@ -37,7 +38,7 @@ if ($current_user && !empty($current_user['name'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($page_title) ?> - <?= htmlspecialchars($company_name) ?></title>
+    <title><?= htmlspecialchars($page_title) ?> - <?= htmlspecialchars($app_name) ?> | <?= htmlspecialchars($company_name) ?></title>
     
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -70,7 +71,8 @@ if ($current_user && !empty($current_user['name'])) {
         <div class="container-fluid px-3 px-xl-4 d-flex align-items-center justify-content-between">
             <!-- Left Utility Links -->
             <div class="d-flex align-items-center gap-2 text-white-50 small" style="font-size: 0.74rem;">
-                <span class="text-white fw-semibold"><i class="fas fa-network-wired text-info me-1"></i> Visimedia B2B</span>
+                <span class="text-white fw-semibold"><i class="fas fa-network-wired text-info me-1"></i> <?= htmlspecialchars($app_name) ?></span>
+                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2 py-0 d-none d-sm-inline-block" style="font-size:0.65rem;"><?= htmlspecialchars($system_version) ?></span>
                 <span class="opacity-25">|</span>
                 <span class="d-none d-md-inline"><i class="fas fa-headset text-warning me-1"></i> NOC 24/7 Hotline: <strong>(021) 5082-8899</strong></span>
                 <span class="opacity-25 d-none d-md-inline">|</span>
@@ -107,7 +109,13 @@ if ($current_user && !empty($current_user['name'])) {
             <a class="navbar-brand d-flex align-items-center me-4 py-0 flex-shrink-0" href="<?= base_url('index.php') ?>">
                 <div class="brand-logo-isp me-2">
                     <span class="logo-visi">visi<span class="logo-media">media</span><span class="logo-tld">.id</span></span>
-                    <span class="logo-corp-sub">PT. VISIMEDIA PRATAMA PERSADA</span>
+                    <span class="logo-corp-sub"><?= htmlspecialchars($company_name) ?></span>
+                </div>
+                <div class="border-start ps-2 ms-1 d-none d-lg-block">
+                    <div class="fw-bold text-dark lh-1" style="font-size: 0.88rem;"><?= htmlspecialchars($app_name) ?></div>
+                    <span class="badge bg-light text-primary border rounded-pill px-2 py-0 mt-1" style="font-size: 0.65rem; font-weight: 600;">
+                        <i class="fas fa-code-branch me-1"></i><?= htmlspecialchars($system_version) ?>
+                    </span>
                 </div>
             </a>
             
