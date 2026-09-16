@@ -218,8 +218,11 @@ function display_flash() {
         if ($msg['type'] === 'danger') $icon = 'exclamation-circle';
         if ($msg['type'] === 'warning') $icon = 'exclamation-triangle';
         
+        // Izinkan tag pemformatan teks aman seperti strong, b, i, code, span, br
+        $safe_text = strip_tags($msg['text'], '<strong><b><i><code><span><br><small>');
+        
         echo '<div class="alert alert-' . htmlspecialchars($msg['type']) . ' alert-dismissible fade show shadow-sm" role="alert">
-            <i class="fas fa-' . $icon . ' me-2"></i> ' . htmlspecialchars($msg['text']) . '
+            <i class="fas fa-' . $icon . ' me-2"></i> ' . $safe_text . '
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>';
     }
