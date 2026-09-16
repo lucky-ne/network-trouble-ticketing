@@ -257,6 +257,6 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <?php 
-include __DIR__ . '/modal_buat_tiket.php';
+render_modal_buat_tiket($pdo, $user, $client_info);
 include __DIR__ . '/../includes/footer.php'; 
 ?>
