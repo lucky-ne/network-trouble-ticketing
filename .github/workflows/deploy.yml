@@ -35,5 +35,6 @@ jobs:
             echo "Current directory: $(pwd)"
             git fetch origin main
             git reset --hard origin/main
+            mkdir -p uploads && chmod -R 777 uploads 2>/dev/null || (sudo mkdir -p uploads && sudo chmod -R 777 uploads)
             docker compose up -d --build || sudo docker compose up -d --build
             echo "Deployment to Ubuntu Server Completed Successfully!"

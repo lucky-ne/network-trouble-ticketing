@@ -30,7 +30,7 @@ services:
     container_name: net_ticketing_db
     restart: unless-stopped
     environment:
-      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_ROOT_PASSWORD=Indonesia123
       - MYSQL_DATABASE=net_ticketing_db
       - MYSQL_USER=net_user
       - MYSQL_PASSWORD=net_pass

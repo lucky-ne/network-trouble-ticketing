@@ -67,8 +67,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
             $upload_dir = __DIR__ . '/../uploads/';
             if (!is_dir($upload_dir)) {
-                mkdir($upload_dir, 0777, true);
+                @mkdir($upload_dir, 0777, true);
             }
+            @chmod($upload_dir, 0777);
             $file_tmp = $_FILES['attachment']['tmp_name'];
             $file_name = $_FILES['attachment']['name'];
             $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
@@ -76,8 +77,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (in_array($ext, $allowed)) {
                 $new_file_name = 'TKT_' . time() . '_' . uniqid() . '.' . $ext;
-                if (move_uploaded_file($file_tmp, $upload_dir . $new_file_name)) {
+                $target_path = $upload_dir . $new_file_name;
+                if (@move_uploaded_file($file_tmp, $target_path)) {
                     $attachment_path = 'uploads/' . $new_file_name;
+                    @chmod($target_path, 0666);
                 }
             }
         }

@@ -39,5 +39,5 @@ RUN chown -R www-data:www-data /var/www/html \
 # Expose HTTP port
 EXPOSE 80
 
-# Run Apache in foreground
-CMD ["apache2-foreground"]
+# Run Apache in foreground with runtime uploads permissions check
+CMD ["sh", "-c", "mkdir -p /var/www/html/uploads && chown -R www-data:www-data /var/www/html/uploads && chmod -R 777 /var/www/html/uploads && exec apache2-foreground"]
