@@ -210,14 +210,10 @@ if ($current_user && !empty($current_user['name'])) {
                 <!-- Oxygen.id Style Action Pills (Green & Orange Buttons) -->
                 <div class="d-flex align-items-center gap-2 mt-3 mt-xl-0 flex-shrink-0">
                     
-                    <!-- Pill 1 (Green Action Button) -->
+                    <!-- Pill Action Button (Khusus Klien: Buat Tiket) -->
                     <?php if ($current_role === 'karyawan' || $current_role === 'customer'): ?>
                         <a href="<?= base_url('customer/buat_tiket.php') ?>" class="btn btn-pill-green shadow-sm">
                             <i class="fas fa-plus-circle me-1"></i> Buat Tiket
-                        </a>
-                    <?php else: ?>
-                        <a href="#" data-bs-toggle="modal" data-bs-target="#modalSlaHelp" class="btn btn-pill-green shadow-sm">
-                            <i class="fas fa-shield-alt me-1"></i> Matriks SLA
                         </a>
                     <?php endif; ?>
                     
