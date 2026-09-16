@@ -9,7 +9,7 @@ services:
     container_name: net_ticketing_app
     restart: unless-stopped
     ports:
-      - "80:80"       # Ubah ke "8080:80" jika port 80 di server Ubuntu sudah dipakai
+      - "8080:80"       # Port 8080 agar Nginx Reverse Proxy (SSL/HTTPS) di port 80/443 berjalan lancar
     environment:
       - DB_HOST=db
       - DB_PORT=3306
