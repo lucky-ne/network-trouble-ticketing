@@ -207,17 +207,10 @@ if ($current_user && !empty($current_user['name'])) {
                     <?php endif; ?>
                 </ul>
                 
-                <!-- Oxygen.id Style Action Pills (Green & Orange Buttons) -->
+                <!-- Oxygen.id Style Action Pills (Orange User Account Button with Dropdown) -->
                 <div class="d-flex align-items-center gap-2 mt-3 mt-xl-0 flex-shrink-0">
                     
-                    <!-- Pill Action Button (Khusus Klien: Buat Tiket) -->
-                    <?php if ($current_role === 'karyawan' || $current_role === 'customer'): ?>
-                        <a href="<?= base_url('customer/buat_tiket.php') ?>" class="btn btn-pill-green shadow-sm">
-                            <i class="fas fa-plus-circle me-1"></i> Buat Tiket
-                        </a>
-                    <?php endif; ?>
-                    
-                    <!-- Pill 2 (Orange Selfcare / User Account Button with Dropdown) -->
+                    <!-- Orange User Account Button with Dropdown -->
                     <div class="dropdown">
                         <button class="btn btn-pill-orange dropdown-toggle shadow-sm d-flex align-items-center gap-2" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <span class="avatar-pill-circle"><?= $user_initials ?></span>

@@ -4,6 +4,8 @@
  * Human-Crafted Enterprise IT Architecture
  */
 require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../includes/mailer.php';
+require_once __DIR__ . '/modal_buat_tiket.php';
 check_auth(['karyawan', 'customer']);
 
 $pdo = get_db();
@@ -18,6 +20,9 @@ if ($client_id) {
     $stmt_c->execute([$client_id]);
     $client_info = $stmt_c->fetch();
 }
+
+// PROSES BUAT TIKET BARU VIA MODAL POPUP
+process_create_ticket_request($pdo, $user, $client_info, base_url('customer/dashboard.php'));
 
 // PROSES HAPUS TIKET OLEH PIC KLIEN
 if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
@@ -124,9 +129,9 @@ include __DIR__ . '/../includes/header.php';
         </p>
     </div>
     <div class="col-md-4 text-md-end mt-3 mt-md-0">
-        <a href="<?= base_url('customer/buat_tiket.php') ?>" class="btn btn-primary px-3 py-2 fw-semibold">
+        <button type="button" class="btn btn-primary px-3 py-2 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalBuatTiket">
             <i class="fas fa-plus-circle me-1"></i> Buat Laporan Gangguan
-        </a>
+        </button>
     </div>
 </div>
 
@@ -251,4 +256,7 @@ include __DIR__ . '/../includes/header.php';
     </div>
 </div>
 
-<?php include __DIR__ . '/../includes/footer.php'; ?>
+<?php 
+include __DIR__ . '/modal_buat_tiket.php';
+include __DIR__ . '/../includes/footer.php'; 
+?>

@@ -5,6 +5,8 @@
  * Khusus PIC Klien (SLA & Prioritas dikelola internal oleh NOC)
  */
 require_once __DIR__ . '/../includes/auth_check.php';
+require_once __DIR__ . '/../includes/mailer.php';
+require_once __DIR__ . '/modal_buat_tiket.php';
 check_auth(['karyawan', 'customer']);
 
 $pdo = get_db();
@@ -23,6 +25,9 @@ if ($client_id) {
     $stmt_c->execute([$client_id]);
     $client_info = $stmt_c->fetch();
 }
+
+// PROSES BUAT TIKET BARU VIA MODAL POPUP
+process_create_ticket_request($pdo, $user, $client_info, base_url('customer/riwayat_tiket.php'));
 
 // PROSES HAPUS TIKET OLEH PIC KLIEN
 if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
@@ -123,9 +128,9 @@ include __DIR__ . '/../includes/header.php';
         <a href="<?= base_url('customer/dashboard.php') ?>" class="btn btn-outline-secondary px-3 py-2 fw-medium">
             <i class="fas fa-arrow-left me-1"></i> Dashboard
         </a>
-        <a href="<?= base_url('customer/buat_tiket.php') ?>" class="btn btn-primary px-3 py-2 fw-semibold">
+        <button type="button" class="btn btn-primary px-3 py-2 fw-semibold" data-bs-toggle="modal" data-bs-target="#modalBuatTiket">
             <i class="fas fa-plus-circle me-1"></i> Buat Laporan Baru
-        </a>
+        </button>
     </div>
 </div>
 
@@ -272,4 +277,7 @@ include __DIR__ . '/../includes/header.php';
     </div>
 </div>
 
-<?php include __DIR__ . '/../includes/footer.php'; ?>
+<?php 
+include __DIR__ . '/modal_buat_tiket.php';
+include __DIR__ . '/../includes/footer.php'; 
+?>
