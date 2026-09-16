@@ -198,13 +198,75 @@ include __DIR__ . '/../includes/header.php';
                     </div>
                 </div>
 
-                <?php if (!empty($ticket['attachment'])): ?>
+                <?php if (!empty($ticket['attachment'])): 
+                    $att_ext = strtolower(pathinfo($ticket['attachment'], PATHINFO_EXTENSION));
+                    $is_image = in_array($att_ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                    $att_url = base_url($ticket['attachment']);
+                ?>
                     <div class="mb-3">
-                        <label class="form-label text-muted small mb-1">Lampiran Log / Bukti</label>
-                        <div>
-                            <a href="<?= base_url($ticket['attachment']) ?>" target="_blank" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-paperclip me-1"></i> Lihat Lampiran Bukti
-                            </a>
+                        <label class="form-label text-muted small mb-1 fw-semibold">
+                            <i class="fas fa-paperclip text-primary me-1"></i> Lampiran Log / Bukti Gangguan dari Klien
+                        </label>
+                        <div class="p-3 bg-light rounded border">
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas <?= $is_image ? 'fa-file-image text-info' : 'fa-file-alt text-warning' ?> fs-4"></i>
+                                    <div>
+                                        <div class="fw-semibold text-dark small"><?= basename($ticket['attachment']) ?></div>
+                                        <small class="text-muted">Format: <?= strtoupper($att_ext) ?></small>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalAttachmentTeknisi">
+                                        <i class="fas fa-eye me-1"></i> Lihat Bukti
+                                    </button>
+                                    <a href="<?= $att_url ?>" download class="btn btn-sm btn-outline-secondary" title="Unduh File">
+                                        <i class="fas fa-download me-1"></i> Unduh
+                                    </a>
+                                </div>
+                            </div>
+
+                            <?php if ($is_image): ?>
+                                <div class="mt-3 text-center bg-white p-2 rounded border" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalAttachmentTeknisi">
+                                    <img src="<?= $att_url ?>" alt="Bukti Gangguan" class="img-fluid rounded shadow-sm" style="max-height: 220px; object-fit: contain;">
+                                    <div class="text-muted small mt-1"><i class="fas fa-search-plus me-1"></i> Klik gambar untuk memperbesar</div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <!-- Modal Pratinjau Lampiran Bukti untuk Teknisi -->
+                    <div class="modal fade" id="modalAttachmentTeknisi" tabindex="-1" aria-labelledby="modalAttachmentTekLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                            <div class="modal-content border-0 shadow">
+                                <div class="modal-header bg-dark text-white py-2">
+                                    <h6 class="modal-title mb-0" id="modalAttachmentTekLabel">
+                                        <i class="fas <?= $is_image ? 'fa-image text-info' : 'fa-file-alt text-warning' ?> me-2"></i>
+                                        Bukti Gangguan: <?= htmlspecialchars($ticket['ticket_code']) ?>
+                                    </h6>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-center p-3 bg-light">
+                                    <?php if ($is_image): ?>
+                                        <img src="<?= $att_url ?>" alt="Bukti Gangguan" class="img-fluid rounded shadow-sm border" style="max-height: 75vh; object-fit: contain;">
+                                    <?php elseif ($att_ext === 'pdf'): ?>
+                                        <iframe src="<?= $att_url ?>" style="width: 100%; height: 70vh; border: none;" class="rounded border"></iframe>
+                                    <?php else: ?>
+                                        <div class="p-4 bg-white rounded border">
+                                            <i class="fas fa-file-download text-primary display-4 mb-3"></i>
+                                            <h5><?= basename($ticket['attachment']) ?></h5>
+                                            <p class="text-muted small">File ini berformat <strong><?= strtoupper($att_ext) ?></strong>.</p>
+                                            <a href="<?= $att_url ?>" download class="btn btn-primary">
+                                                <i class="fas fa-download me-1"></i> Unduh Berkas
+                                            </a>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="modal-footer py-2 bg-white d-flex justify-content-between">
+                                    <small class="text-muted"><i class="fas fa-info-circle me-1"></i> <?= basename($ticket['attachment']) ?></small>
+                                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 <?php endif; ?>
