@@ -24,6 +24,38 @@ if ($client_id) {
     $client_info = $stmt_c->fetch();
 }
 
+// PROSES HAPUS TIKET OLEH PIC KLIEN
+if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
+    $del_id = (int)$_GET['id'];
+    
+    // Verifikasi kepemilikan tiket
+    if ($client_id) {
+        $stmt_chk = $pdo->prepare("SELECT * FROM tickets WHERE id = ? AND client_id = ?");
+        $stmt_chk->execute([$del_id, $client_id]);
+    } else {
+        $stmt_chk = $pdo->prepare("SELECT * FROM tickets WHERE id = ? AND user_id = ?");
+        $stmt_chk->execute([$del_id, $user_id]);
+    }
+    $t_del = $stmt_chk->fetch();
+
+    if ($t_del) {
+        try {
+            if (!empty($t_del['attachment']) && file_exists(__DIR__ . '/../' . $t_del['attachment'])) {
+                @unlink(__DIR__ . '/../' . $t_del['attachment']);
+            }
+            $stmt_d = $pdo->prepare("DELETE FROM tickets WHERE id = ?");
+            $stmt_d->execute([$del_id]);
+            set_flash('success', "Tiket gangguan <strong>#{$t_del['ticket_code']}</strong> berhasil dihapus.");
+        } catch (Exception $e) {
+            set_flash('danger', 'Gagal menghapus tiket: ' . $e->getMessage());
+        }
+    } else {
+        set_flash('danger', 'Tiket tidak ditemukan atau Anda tidak memiliki hak akses untuk menghapus tiket ini.');
+    }
+    header('Location: ' . base_url('customer/riwayat_tiket.php'));
+    exit;
+}
+
 // Ambil Kategori untuk Filter Dropdown
 $categories = $pdo->query("SELECT * FROM categories ORDER BY name ASC")->fetchAll();
 
@@ -220,9 +252,17 @@ include __DIR__ . '/../includes/header.php';
                                 <?= get_status_badge($t['status']) ?>
                             </td>
                             <td class="text-center">
-                                <a href="<?= base_url('customer/detail_tiket.php?id=' . $t['id']) ?>" class="btn btn-sm btn-outline-primary" title="Lihat Detail & Tracking Timeline">
-                                    <i class="fas fa-eye me-1"></i> Detail
-                                </a>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="<?= base_url('customer/detail_tiket.php?id=' . $t['id']) ?>" class="btn btn-outline-primary" title="Lihat Detail & Tracking Timeline">
+                                        <i class="fas fa-eye me-1"></i> Detail
+                                    </a>
+                                    <a href="<?= base_url('customer/riwayat_tiket.php?action=delete&id=' . $t['id']) ?>" 
+                                       class="btn btn-outline-danger" 
+                                       title="Hapus Tiket" 
+                                       onclick="return confirm('Apakah Anda yakin ingin menghapus tiket #<?= htmlspecialchars($t['ticket_code']) ?>?')">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>

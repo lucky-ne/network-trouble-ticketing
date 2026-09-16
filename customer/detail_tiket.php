@@ -89,6 +89,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_close'])) {
     }
 }
 
+// Proses Hapus Tiket oleh PIC Klien
+if (isset($_GET['action']) && $_GET['action'] === 'delete') {
+    try {
+        if (!empty($ticket['attachment']) && file_exists(__DIR__ . '/../' . $ticket['attachment'])) {
+            @unlink(__DIR__ . '/../' . $ticket['attachment']);
+        }
+        $stmt_del = $pdo->prepare("DELETE FROM tickets WHERE id = ?");
+        $stmt_del->execute([$ticket_id]);
+        
+        set_flash('success', "Tiket gangguan <strong>#{$ticket['ticket_code']}</strong> berhasil dihapus.");
+        $redirect_to = ($current_role === 'karyawan' || $current_role === 'customer') ? base_url('customer/dashboard.php') : base_url('admin/semua_tiket.php');
+        header('Location: ' . $redirect_to);
+        exit;
+    } catch (Exception $e) {
+        set_flash('danger', 'Gagal menghapus tiket: ' . $e->getMessage());
+        header('Location: ' . base_url('customer/detail_tiket.php?id=' . $ticket_id));
+        exit;
+    }
+}
+
 // Ambil Riwayat Log Tiket
 $stmt_logs = $pdo->prepare("SELECT 
     tl.*, u.name AS user_name, u.role AS user_role 
@@ -136,6 +156,12 @@ include __DIR__ . '/../includes/header.php';
             <?= get_status_badge($ticket['status']) ?>
             <a href="<?= base_url('helpdesk/cetak_tiket.php?id=' . $ticket['id']) ?>" target="_blank" class="btn btn-sm btn-outline-success">
                 <i class="fas fa-print me-1"></i> Cetak Berita Acara (PDF)
+            </a>
+            <a href="<?= base_url('customer/detail_tiket.php?action=delete&id=' . $ticket['id']) ?>" 
+               class="btn btn-sm btn-outline-danger" 
+               title="Hapus Tiket" 
+               onclick="return confirm('Apakah Anda yakin ingin menghapus tiket #<?= htmlspecialchars($ticket['ticket_code']) ?> ini secara permanen?')">
+                <i class="fas fa-trash-alt me-1"></i> Hapus
             </a>
         </div>
         <?php if ($current_role !== 'karyawan'): ?>
