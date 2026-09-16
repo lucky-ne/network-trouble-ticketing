@@ -162,13 +162,13 @@ INSERT INTO `users` (`id`, `nip`, `name`, `email`, `password`, `role`, `client_i
 
 -- 3. Data Pengaturan Website / Profil Sistem
 INSERT INTO `settings` (`setting_key`, `setting_value`, `setting_group`, `description`) VALUES
-('app_name', 'NetTicket B2B - SLA Tracking', 'general', 'Nama Aplikasi / Sistem'),
+('app_name', 'VMP-NetTicket', 'general', 'Nama Aplikasi / Sistem'),
 ('company_name', 'PT. Visimedia Pratama Persada', 'general', 'Nama Perusahaan / Penyedia Layanan'),
 ('company_tagline', 'B2B Network Provider & Managed Service Solutions', 'general', 'Slogan / Tagline Perusahaan'),
 ('company_address', 'Cyber 2 Tower Lt. 12, Jl. HR Rasuna Said Blok X-5, Jakarta Selatan 12950', 'general', 'Alamat Kantor Pusat'),
 ('company_phone', '(021) 5299-1234 / Hotline NOC: 0811-9876-543', 'general', 'Nomor Telepon / Hotline NOC 24/7'),
 ('company_email', 'noc@visimedia.co.id', 'general', 'Email Dukungan NOC / Helpdesk'),
-('system_version', 'v2.5 Enterprise B2B', 'system', 'Versi Sistem'),
+('system_version', 'v1.0 Enterprise', 'system', 'Versi Sistem'),
 ('footer_text', 'Sistem Informasi Network Trouble Ticketing B2B - PT. Visimedia Pratama Persada', 'general', 'Keterangan Footer'),
 ('sla_alert_threshold', '80', 'sla', 'Ambang Batas Peringatan SLA (%)'),
 ('smtp_enabled', '0', 'smtp', 'Aktifkan Notifikasi Email (1=Ya, 0=Tidak)'),
