@@ -23,7 +23,17 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}       # Private SSH Key Anda (opsional jika pakai password)
           port: ${{ secrets.SERVER_PORT || 22 }}
           script: |
-            cd /var/www/network-trouble-ticketing
-            git pull origin main
-            sudo docker compose up -d --build
+            if [ -d "/var/www/network-trouble-ticketing" ]; then
+              cd /var/www/network-trouble-ticketing
+            elif [ -d "/var/www/net-ticketing" ]; then
+              cd /var/www/net-ticketing
+            elif [ -d "$HOME/network-trouble-ticketing" ]; then
+              cd "$HOME/network-trouble-ticketing"
+            elif [ -d "/root/network-trouble-ticketing" ]; then
+              cd /root/network-trouble-ticketing
+            fi
+            echo "Current directory: $(pwd)"
+            git fetch origin main
+            git reset --hard origin/main
+            docker compose up -d --build || sudo docker compose up -d --build
             echo "Deployment to Ubuntu Server Completed Successfully!"
