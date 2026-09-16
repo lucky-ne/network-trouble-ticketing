@@ -276,7 +276,7 @@ $page_title = 'Laporan Kinerja Field Engineer B2B';
                     <button type="button" onclick="window.print()" class="btn btn-success btn-sm fw-semibold">
                         <i class="fas fa-print me-1"></i> Cetak PDF (A4)
                     </button>
-                    <a href="<?= base_url('manager/dashboard.php') ?>" class="btn btn-outline-secondary btn-sm">
+                    <a href="<?= base_url('manager/kinerja_teknisi.php') ?>" class="btn btn-outline-secondary btn-sm" title="Kembali ke Halaman Kinerja">
                         <i class="fas fa-arrow-left"></i>
                     </a>
                 </div>

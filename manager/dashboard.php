@@ -83,8 +83,8 @@ include __DIR__ . '/../includes/header.php';
         <p class="text-secondary small mb-0">Indikator performa kunci (KPI), kepatuhan SLA jaringan B2B, dan evaluasi MTTR PT. Visimedia Pratama Persada.</p>
     </div>
     <div class="d-flex gap-2">
-        <a href="<?= base_url('manager/cetak_kinerja_teknisi.php') ?>" target="_blank" class="btn btn-outline-secondary btn-sm fw-semibold">
-            <i class="fas fa-user-check me-1"></i> Rekap Teknisi (PDF)
+        <a href="<?= base_url('manager/kinerja_teknisi.php') ?>" class="btn btn-outline-secondary btn-sm fw-semibold">
+            <i class="fas fa-user-check me-1"></i> Rekap Kinerja Teknisi
         </a>
         <a href="<?= base_url('manager/cetak_laporan.php') ?>" class="btn btn-primary btn-sm fw-semibold">
             <i class="fas fa-file-invoice me-1"></i> Cetak Laporan Bulanan SLA (PDF)

@@ -202,7 +202,7 @@ if ($current_user && !empty($current_user['name'])) {
                             <a class="nav-link <?= strpos($_SERVER['PHP_SELF'], 'cetak_laporan.php') !== false ? 'active' : '' ?>" href="<?= base_url('manager/cetak_laporan.php') ?>">Laporan SLA Klien</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link <?= strpos($_SERVER['PHP_SELF'], 'cetak_kinerja_teknisi.php') !== false ? 'active' : '' ?>" href="<?= base_url('manager/cetak_kinerja_teknisi.php') ?>">Kinerja Teknisi</a>
+                            <a class="nav-link <?= (strpos($_SERVER['PHP_SELF'], 'kinerja_teknisi.php') !== false || strpos($_SERVER['PHP_SELF'], 'cetak_kinerja_teknisi.php') !== false) ? 'active' : '' ?>" href="<?= base_url('manager/kinerja_teknisi.php') ?>">Kinerja Teknisi</a>
                         </li>
                     <?php endif; ?>
                 </ul>
