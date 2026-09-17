@@ -347,22 +347,50 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
             </div>
 
-            <!-- Card Preview Navbar -->
-            <div class="card border-0 shadow-sm rounded-4 mb-4">
-                <div class="card-header bg-white py-3 border-0">
-                    <h6 class="fw-bold mb-0 text-dark">
-                        <i class="fas fa-eye text-info me-2"></i>Pratinjau Tampilan Header
+            <!-- Card Preview Header (Zinc Precision Preview) -->
+            <div class="card border shadow-sm mb-4">
+                <div class="card-header bg-white py-2 px-3 border-bottom d-flex align-items-center justify-content-between">
+                    <h6 class="fw-semibold mb-0 text-dark" style="font-size: 0.8125rem;">
+                        <i class="fas fa-eye text-secondary me-2"></i>Pratinjau Tampilan Header
                     </h6>
+                    <span class="badge rounded-md font-monospace" style="background:#f4f4f5; color:#18181b; border:1px solid #e4e4e7; font-size:0.65rem;">Live Preview</span>
                 </div>
-                <div class="card-body pt-0">
-                    <div class="p-3 bg-dark text-white rounded-3 shadow-sm" style="background: #0f172a !important;">
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="bg-primary text-white p-2 rounded-3">
-                                <i class="fas fa-network-wired"></i>
+                <div class="card-body p-0">
+                    <div class="border rounded-bottom overflow-hidden" style="border-color:#e4e4e7 !important;">
+                        <!-- Preview Tier 1: Top Utility Bar -->
+                        <div class="py-1 px-3 d-flex align-items-center justify-content-between" style="background: #09090b; color: #a1a1aa; font-size: 0.65rem; border-bottom: 1px solid #27272a;">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-white fw-semibold"><i class="fas fa-network-wired text-secondary me-1"></i> <span id="preview_app_name_top"><?= htmlspecialchars($app_name) ?></span></span>
+                                <span class="badge rounded-md px-1 py-0 font-monospace d-none d-sm-inline-block" style="background:#27272a; color:#e4e4e7; border:1px solid #3f3f46; font-size:0.58rem;" id="preview_version_top"><?= htmlspecialchars($system_version) ?></span>
+                                <span class="opacity-25 text-secondary">|</span>
+                                <span class="text-secondary d-none d-md-inline"><i class="fas fa-headset me-1"></i> Hotline: <strong class="text-light" id="preview_phone_top"><?= htmlspecialchars($company_phone) ?></strong></span>
                             </div>
-                            <div>
-                                <div class="fw-bold lh-1 text-white small"><?= htmlspecialchars($app_name) ?></div>
-                                <small class="text-white-50" style="font-size:0.7rem;"><?= htmlspecialchars($company_name) ?></small>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="status-dot"></span>
+                                <span>NOC: <strong class="text-success fw-semibold">ONLINE</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- Preview Tier 2: Main Brand Navbar -->
+                        <div class="py-2 px-3 bg-white d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="brand-logo-isp me-2">
+                                    <div class="logo-main" style="font-size: 0.95rem;">
+                                        <span class="fw-bold text-dark">visi<span class="text-dark">media</span></span><span class="text-secondary font-monospace" style="font-size:0.75rem;">.id</span>
+                                    </div>
+                                    <span class="logo-corp-sub" id="preview_company_name" style="font-size:0.55rem;"><?= htmlspecialchars($company_name) ?></span>
+                                </div>
+                                <div class="border-start ps-2 ms-1">
+                                    <div class="fw-semibold text-dark lh-1" style="font-size: 0.75rem;" id="preview_app_name_nav"><?= htmlspecialchars($app_name) ?></div>
+                                    <span class="badge rounded-md px-1 py-0 mt-1 font-monospace" style="background:#f4f4f5; color:#18181b; border:1px solid #e4e4e7; font-size: 0.58rem; font-weight: 500;" id="preview_version_nav">
+                                        <?= htmlspecialchars($system_version) ?>
+                                    </span>
+                                </div>
+                            </div>
+                            <!-- Mock User Trigger -->
+                            <div class="btn-user-account py-1 px-2" style="font-size: 0.7rem; pointer-events: none;">
+                                <span class="avatar-initials-badge" style="width:16px; height:16px; font-size:0.55rem;">AS</span>
+                                <span class="d-none d-sm-inline">Admin</span>
                             </div>
                         </div>
                     </div>
@@ -370,27 +398,30 @@ require_once __DIR__ . '/../includes/header.php';
             </div>
 
             <!-- Card Preview Footer -->
-            <div class="card border-0 shadow-sm rounded-4 mb-4">
-                <div class="card-header bg-white py-3 border-0">
-                    <h6 class="fw-bold mb-0 text-dark">
+            <div class="card border shadow-sm mb-4">
+                <div class="card-header bg-white py-2 px-3 border-bottom d-flex align-items-center justify-content-between">
+                    <h6 class="fw-semibold mb-0 text-dark" style="font-size: 0.8125rem;">
                         <i class="fas fa-window-minimize text-secondary me-2"></i>Pratinjau Tampilan Footer
                     </h6>
                 </div>
-                <div class="card-body pt-0">
-                    <div class="p-3 bg-light border rounded-3 text-center">
-                        <div class="small fw-semibold text-dark">&copy; <?= date('Y') ?> <?= htmlspecialchars($app_name) ?> - <?= htmlspecialchars($company_tagline) ?></div>
-                        <small class="text-secondary" style="font-size:0.72rem;"><?= htmlspecialchars($footer_text) ?></small>
+                <div class="card-body p-3">
+                    <div class="p-2 border rounded-md text-center" style="background: #ffffff; border-color: #e4e4e7 !important;">
+                        <div class="small fw-semibold text-dark" style="font-size: 0.75rem;">
+                            &copy; <?= date('Y') ?> <span id="preview_company_footer"><?= htmlspecialchars($company_name) ?></span> &bull; <span id="preview_app_footer"><?= htmlspecialchars($app_name) ?></span>
+                        </div>
+                        <div class="text-secondary" style="font-size:0.68rem;" id="preview_tagline_footer"><?= htmlspecialchars($company_tagline) ?></div>
+                        <div class="text-muted mt-1" style="font-size:0.65rem;" id="preview_footer_text"><?= htmlspecialchars($footer_text) ?></div>
                     </div>
                 </div>
             </div>
 
             <!-- Tips Presentasi Dosen -->
-            <div class="card border-0 bg-primary bg-opacity-10 rounded-4 p-3 border-start border-4 border-primary">
+            <div class="card border rounded-4 p-3 border-start border-4 border-primary" style="background: #ffffff; border-color: #e4e4e7 !important;">
                 <div class="d-flex gap-2">
                     <i class="fas fa-lightbulb text-primary fa-lg mt-1"></i>
                     <div>
-                        <div class="fw-bold text-primary small">Tips Saat Ujian / Sidang KKP:</div>
-                        <p class="small text-secondary mb-0 mt-1">
+                        <div class="fw-semibold text-dark small" style="font-size:0.8125rem;">Tips Saat Ujian / Sidang KKP:</div>
+                        <p class="small text-secondary mb-0 mt-1" style="font-size:0.75rem;">
                             Anda dapat mendemonstrasikan fitur notifikasi email ini di depan dosen penguji dengan memasukkan email penguji saat membuat tiket gangguan, lalu tunjukkan notifikasi real-time yang langsung masuk ke kotak masuk Gmail penguji!
                         </p>
                     </div>
@@ -400,6 +431,28 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </div>
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function bindInputToPreview(inputName, previewIds) {
+        const input = document.querySelector(`input[name="${inputName}"]`);
+        if (!input) return;
+        input.addEventListener('input', function() {
+            previewIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = input.value || '-';
+            });
+        });
+    }
+
+    bindInputToPreview('app_name', ['preview_app_name_top', 'preview_app_name_nav', 'preview_app_footer']);
+    bindInputToPreview('system_version', ['preview_version_top', 'preview_version_nav']);
+    bindInputToPreview('company_name', ['preview_company_name', 'preview_company_footer']);
+    bindInputToPreview('company_phone', ['preview_phone_top']);
+    bindInputToPreview('company_tagline', ['preview_tagline_footer']);
+    bindInputToPreview('footer_text', ['preview_footer_text']);
+});
+</script>
 
 <!-- Modal Uji Coba Kirim Email -->
 <div class="modal fade" id="modalTestEmail" tabindex="-1" aria-labelledby="modalTestEmailLabel" aria-hidden="true">
