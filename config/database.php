@@ -154,9 +154,9 @@ function get_status_badge($status) {
  */
 function get_sla_badge($sla_status, $deadline = null, $resolved_at = null) {
     if ($sla_status === 'within_sla') {
-        return '<span class="badge bg-success text-white"><i class="fas fa-clock me-1"></i> Tepat Waktu (On-Time SLA)</span>';
+        return '<span class="badge bg-success"><i class="fas fa-clock me-1"></i> Tepat Waktu (On-Time SLA)</span>';
     } elseif ($sla_status === 'breached') {
-        return '<span class="badge bg-danger text-white"><i class="fas fa-exclamation-triangle me-1"></i> Terlambat (SLA Breached)</span>';
+        return '<span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i> Terlambat (SLA Breached)</span>';
     } else {
         // Pending / Masih berjalan
         if ($deadline) {
@@ -169,13 +169,13 @@ function get_sla_badge($sla_status, $deadline = null, $resolved_at = null) {
                 $hours = floor($overdue_mins / 60);
                 $mins = $overdue_mins % 60;
                 $str = $hours > 0 ? "{$hours}j {$mins}m" : "{$mins}m";
-                return '<span class="badge bg-danger text-white pulse"><i class="fas fa-fire me-1"></i> Melewati SLA (' . $str . ')</span>';
+                return '<span class="badge bg-danger"><i class="fas fa-fire me-1"></i> Melewati SLA (' . $str . ')</span>';
             } else {
                 $remain_mins = round($diff_seconds / 60);
                 $hours = floor($remain_mins / 60);
                 $mins = $remain_mins % 60;
                 $str = $hours > 0 ? "{$hours}j {$mins}m" : "{$mins}m";
-                return '<span class="badge bg-info text-dark"><i class="fas fa-hourglass-half me-1"></i> Sisa Waktu SLA: ' . $str . '</span>';
+                return '<span class="badge bg-info"><i class="fas fa-hourglass-half me-1"></i> Sisa Waktu SLA: ' . $str . '</span>';
             }
         }
         return '<span class="badge bg-secondary"><i class="fas fa-clock me-1"></i> SLA Berjalan</span>';
