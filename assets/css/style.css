@@ -913,15 +913,19 @@ code, kbd, samp, pre, .font-monospace, .code-mono, .code-sm {
   color: var(--zinc-600);
 }
 
-.dataTables_wrapper .dataTables_length select {
+.dataTables_wrapper .dataTables_length select,
+.dataTables_wrapper .dataTables_length select.form-select,
+.dataTables_wrapper .dataTables_length select.form-select-sm {
   font-size: 0.8125rem;
   border-radius: 0.375rem;
   border: 1px solid var(--zinc-200);
-  padding: 0.25rem 0.5rem;
-  margin: 0 0.35rem;
+  padding: 0.3rem 2rem 0.3rem 0.65rem !important;
+  margin: 0 0.4rem;
   display: inline-block;
-  width: auto;
+  width: auto !important;
+  min-width: 70px;
   background-color: var(--zinc-surface);
+  cursor: pointer;
 }
 
 .dataTables_wrapper .dataTables_filter {
@@ -930,11 +934,13 @@ code, kbd, samp, pre, .font-monospace, .code-mono, .code-sm {
   color: var(--zinc-600);
 }
 
-.dataTables_wrapper .dataTables_filter input {
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_filter input.form-control,
+.dataTables_wrapper .dataTables_filter input.form-control-sm {
   font-size: 0.8125rem;
   border-radius: 0.375rem;
   border: 1px solid var(--zinc-200);
-  padding: 0.35rem 0.65rem;
+  padding: 0.35rem 0.75rem;
   margin-left: 0.5rem;
   display: inline-block;
   width: 220px;
