@@ -237,8 +237,8 @@ include __DIR__ . '/../includes/header.php';
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
-                                    <a href="<?= base_url('customer/detail_tiket.php?id=' . $t['id']) ?>" class="btn btn-outline-primary" title="Lihat Detail & Tracking Timeline">
-                                        <i class="fas fa-eye me-1"></i> Detail
+                                    <a href="<?= base_url('customer/detail_tiket.php?id=' . $t['id']) ?>" class="btn btn-outline-secondary" title="Lihat Detail & Tracking Timeline">
+                                        <i class="fas fa-eye me-1 text-secondary"></i> Detail
                                     </a>
                                     <a href="<?= base_url('customer/dashboard.php?action=delete&id=' . $t['id']) ?>" 
                                        class="btn btn-outline-danger" 
