@@ -295,19 +295,19 @@ $company_email  = get_setting('company_email', 'support@visimedia.co.id');
 </head>
 <body class="bg-light" style="min-height: 100vh; display: flex; flex-direction: column;">
 
-<!-- 1. Header Gaya Oxygen.id -->
+<!-- 1. Header Zinc Precision -->
 <header class="isp-header">
     <div class="top-utility-bar py-1">
         <div class="container d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-2 text-white-50 small" style="font-size: 0.74rem;">
-                <span class="text-white fw-semibold"><i class="fas fa-network-wired text-info me-1"></i> <?= htmlspecialchars($app_name) ?></span>
-                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill px-2 py-0 d-none d-sm-inline-block" style="font-size:0.65rem;"><?= htmlspecialchars($system_version) ?></span>
-                <span class="opacity-25">|</span>
-                <span class="d-none d-md-inline"><i class="fas fa-headset text-warning me-1"></i> NOC Hotline: <strong><?= htmlspecialchars($company_phone) ?></strong></span>
+            <div class="d-flex align-items-center gap-2 text-white-50 small" style="font-size: 0.72rem;">
+                <span class="text-white fw-semibold"><i class="fas fa-network-wired text-secondary me-1"></i> <?= htmlspecialchars($app_name) ?></span>
+                <span class="badge border rounded-md px-2 py-0 d-none d-sm-inline-block font-monospace" style="background:#27272a; border-color:#3f3f46 !important; color:#e4e4e7; font-size:0.65rem;"><?= htmlspecialchars($system_version) ?></span>
+                <span class="opacity-25 text-secondary">|</span>
+                <span class="d-none d-md-inline text-secondary"><i class="fas fa-headset text-secondary me-1"></i> NOC Hotline: <strong class="text-light"><?= htmlspecialchars($company_phone) ?></strong></span>
             </div>
-            <div class="d-flex align-items-center gap-2 text-white-50 small" style="font-size: 0.74rem;">
+            <div class="d-flex align-items-center gap-2 text-secondary small" style="font-size: 0.72rem;">
                 <span class="status-dot me-1"></span>
-                <span>NOC Gateway: <strong class="text-success">ONLINE</strong></span>
+                <span>NOC Gateway: <strong class="text-success fw-semibold">ONLINE</strong></span>
             </div>
         </div>
     </div>
@@ -315,18 +315,20 @@ $company_email  = get_setting('company_email', 'support@visimedia.co.id');
         <div class="container d-flex align-items-center justify-content-between">
             <a class="navbar-brand d-flex align-items-center py-0" href="<?= base_url('auth/login.php') ?>">
                 <div class="brand-logo-isp">
-                    <span class="logo-visi">visi<span class="logo-media">media</span><span class="logo-tld">.id</span></span>
+                    <div class="logo-main">
+                        <span class="fw-bold text-dark">visi<span class="text-dark">media</span></span><span class="text-secondary font-monospace" style="font-size:0.85rem;">.id</span>
+                    </div>
                     <span class="logo-corp-sub"><?= htmlspecialchars($company_name) ?></span>
                 </div>
                 <div class="border-start ps-2 ms-2 d-none d-sm-block">
-                    <div class="fw-bold text-dark lh-1" style="font-size: 0.88rem;"><?= htmlspecialchars($app_name) ?></div>
-                    <span class="badge bg-light text-primary border rounded-pill px-2 py-0 mt-1" style="font-size: 0.65rem; font-weight: 600;">
+                    <div class="fw-semibold text-dark lh-1" style="font-size: 0.85rem;"><?= htmlspecialchars($app_name) ?></div>
+                    <span class="badge rounded-md px-2 py-0 mt-1 font-monospace" style="background:#f4f4f5; color:#18181b; border:1px solid #e4e4e7; font-size: 0.65rem; font-weight: 500;">
                         <i class="fas fa-code-branch me-1"></i><?= htmlspecialchars($system_version) ?>
                     </span>
                 </div>
             </a>
             <div class="d-none d-md-flex align-items-center gap-2 text-secondary small">
-                <span class="badge bg-light text-primary border fw-semibold px-2 py-1"><i class="fas fa-shield-alt text-primary me-1"></i> Enterprise B2B SLA Tracking</span>
+                <span class="badge rounded-md px-2 py-1 font-monospace" style="background:#f4f4f5; color:#18181b; border:1px solid #e4e4e7; font-size: 0.75rem; font-weight: 500;"><i class="fas fa-shield-alt text-dark me-1"></i> Enterprise B2B SLA Tracking</span>
             </div>
         </div>
     </div>

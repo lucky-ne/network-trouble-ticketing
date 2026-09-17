@@ -14,13 +14,13 @@
             </div>
             <div class="col-md-6 text-center text-md-end">
                 <?php if (isset($_SESSION['user'])): ?>
-                <div class="d-inline-flex align-items-center gap-1 bg-light p-1 rounded border">
-                    <span class="small me-1 text-dark fw-bold" style="font-size:0.75rem;"><i class="fas fa-user-switch text-primary"></i> Demo Role:</span>
-                    <a href="<?= base_url('auth/login.php?quick_login=karyawan') ?>" class="btn btn-xs btn-outline-primary py-0 px-2" style="font-size:0.7rem;" title="Login sebagai PIC Klien B2B">PIC Klien</a>
-                    <a href="<?= base_url('auth/login.php?quick_login=helpdesk') ?>" class="btn btn-xs btn-outline-info text-dark py-0 px-2" style="font-size:0.7rem;" title="Login sebagai Helpdesk / NOC">NOC Helpdesk</a>
-                    <a href="<?= base_url('auth/login.php?quick_login=teknisi') ?>" class="btn btn-xs btn-outline-warning text-dark py-0 px-2" style="font-size:0.7rem;" title="Login sebagai Field Engineer">Teknisi</a>
-                    <a href="<?= base_url('auth/login.php?quick_login=manager') ?>" class="btn btn-xs btn-outline-success py-0 px-2" style="font-size:0.7rem;" title="Login sebagai Manager SLA">Manager</a>
-                    <a href="<?= base_url('auth/login.php?quick_login=admin') ?>" class="btn btn-xs btn-outline-danger py-0 px-2" style="font-size:0.7rem;" title="Login sebagai Admin Master">Admin</a>
+                <div class="d-inline-flex align-items-center gap-1 p-1 rounded-md border" style="background:#fafafa; border-color:#e4e4e7 !important;">
+                    <span class="small me-1 text-secondary fw-semibold" style="font-size:0.72rem;"><i class="fas fa-user-switch text-dark"></i> Switch Demo:</span>
+                    <a href="<?= base_url('auth/login.php?quick_login=karyawan') ?>" class="btn btn-xs py-0 px-2 rounded-md" style="font-size:0.68rem; font-weight:500; background:#ffffff; color:#18181b; border:1px solid #e4e4e7;" title="Login sebagai PIC Klien B2B">PIC Klien</a>
+                    <a href="<?= base_url('auth/login.php?quick_login=helpdesk') ?>" class="btn btn-xs py-0 px-2 rounded-md" style="font-size:0.68rem; font-weight:500; background:#ffffff; color:#18181b; border:1px solid #e4e4e7;" title="Login sebagai Helpdesk / NOC">NOC Helpdesk</a>
+                    <a href="<?= base_url('auth/login.php?quick_login=teknisi') ?>" class="btn btn-xs py-0 px-2 rounded-md" style="font-size:0.68rem; font-weight:500; background:#ffffff; color:#18181b; border:1px solid #e4e4e7;" title="Login sebagai Field Engineer">Teknisi</a>
+                    <a href="<?= base_url('auth/login.php?quick_login=manager') ?>" class="btn btn-xs py-0 px-2 rounded-md" style="font-size:0.68rem; font-weight:500; background:#ffffff; color:#18181b; border:1px solid #e4e4e7;" title="Login sebagai Manager SLA">Manager</a>
+                    <a href="<?= base_url('auth/login.php?quick_login=admin') ?>" class="btn btn-xs py-0 px-2 rounded-md" style="font-size:0.68rem; font-weight:500; background:#ffffff; color:#18181b; border:1px solid #e4e4e7;" title="Login sebagai Admin Master">Admin</a>
                 </div>
                 <?php endif; ?>
             </div>
