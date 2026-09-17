@@ -91,8 +91,6 @@ if ($current_user && !empty($current_user['name'])) {
                 <span class="opacity-25 text-secondary d-none d-md-inline">|</span>
                 <?php if ($current_role === 'karyawan'): ?>
                     <span class="d-none d-lg-inline text-secondary"><i class="fas fa-headset text-success me-1"></i> NOC Support 24/7</span>
-                <?php else: ?>
-                    <span class="d-none d-lg-inline text-secondary"><i class="fas fa-shield-alt text-success me-1"></i> SLA Target 99.5%</span>
                 <?php endif; ?>
                 <?php if ($current_role === 'karyawan' && !empty($current_user['company_name'])): ?>
                     <span class="opacity-25 text-secondary d-none d-xl-inline">|</span>
