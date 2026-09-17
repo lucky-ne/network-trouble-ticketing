@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: net_ticketing_app
-    restart: unless-stopped
+    restart: always
     ports:
       - "8080:80"       # Port 8080 agar Nginx Reverse Proxy (SSL/HTTPS) di port 80/443 berjalan lancar
     environment:
@@ -28,7 +28,7 @@ services:
   db:
     image: mariadb:10.11
     container_name: net_ticketing_db
-    restart: unless-stopped
+    restart: always
     environment:
       - MYSQL_ROOT_PASSWORD=Indonesia123
       - MYSQL_DATABASE=net_ticketing_db
@@ -49,7 +49,7 @@ services:
   phpmyadmin:
     image: phpmyadmin:latest
     container_name: net_ticketing_pma
-    restart: unless-stopped
+    restart: always
     ports:
       - "8081:80"     # Akses GUI Database di http://IP-SERVER:8081
     environment:
