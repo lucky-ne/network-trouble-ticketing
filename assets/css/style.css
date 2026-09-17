@@ -52,7 +52,69 @@ body {
   letter-spacing: -0.005em;
 }
 
-code, kbd, samp, pre, .font-monospace, .code-mono {
+/* Typography Hierarchy (design.md) */
+h1, .display-lg {
+  font-family: 'Geist', sans-serif;
+  font-size: 2.25rem; /* 36px */
+  font-weight: 600;
+  line-height: 2.5rem;
+  letter-spacing: -0.03em;
+  color: var(--zinc-950);
+}
+
+h2, .headline-xl {
+  font-family: 'Geist', sans-serif;
+  font-size: 1.5rem; /* 24px */
+  font-weight: 600;
+  line-height: 2rem;
+  letter-spacing: -0.02em;
+  color: var(--zinc-950);
+}
+
+h3, h4, .headline-lg {
+  font-family: 'Geist', sans-serif;
+  font-size: 1.25rem; /* 20px */
+  font-weight: 600;
+  line-height: 1.75rem;
+  letter-spacing: -0.015em;
+  color: var(--zinc-950);
+}
+
+h5, h6, .headline-sm {
+  font-family: 'Geist', sans-serif;
+  font-size: 1rem; /* 16px */
+  font-weight: 600;
+  line-height: 1.5rem;
+  letter-spacing: -0.01em;
+  color: var(--zinc-950);
+}
+
+.metric-stat {
+  font-family: 'Geist', sans-serif;
+  font-size: 1.75rem; /* 28px */
+  font-weight: 700;
+  line-height: 2rem;
+  letter-spacing: -0.03em;
+  color: var(--zinc-950);
+}
+
+.label-md {
+  font-family: 'Geist', sans-serif;
+  font-size: 0.8125rem; /* 13px */
+  font-weight: 500;
+  line-height: 1rem;
+  letter-spacing: -0.005em;
+}
+
+.label-sm {
+  font-family: 'Geist', sans-serif;
+  font-size: 0.6875rem; /* 11px */
+  font-weight: 500;
+  line-height: 0.875rem;
+  letter-spacing: 0.02em;
+}
+
+code, kbd, samp, pre, .font-monospace, .code-mono, .code-sm {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
 }
 
