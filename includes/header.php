@@ -215,7 +215,10 @@ if ($current_user && !empty($current_user['name'])) {
                     <div class="dropdown">
                         <button class="btn btn-user-account dropdown-toggle shadow-none" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <span class="avatar-initials-badge"><?= $user_initials ?></span>
-                            <span class="d-none d-md-inline text-truncate" style="max-width: 140px;"><?= htmlspecialchars($current_user['name']) ?></span>
+                            <span class="d-none d-md-inline text-truncate" style="max-width: 130px;"><?= htmlspecialchars($current_user['name']) ?></span>
+                            <span class="badge rounded-md font-monospace text-uppercase ms-1" style="background:#f4f4f5; color:#18181b; border:1px solid #e4e4e7; font-size:0.62rem; font-weight:600; padding:2px 5px;">
+                                <?= htmlspecialchars($current_role === 'karyawan' ? 'KLIEN' : ($current_role === 'helpdesk' ? 'NOC' : strtoupper($current_role))) ?>
+                            </span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end user-dropdown-menu" aria-labelledby="userMenuDropdown">
                             <li class="dropdown-header">

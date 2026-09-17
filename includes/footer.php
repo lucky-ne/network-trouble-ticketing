@@ -14,13 +14,52 @@
             </div>
             <div class="col-md-6 text-center text-md-end">
                 <?php if (isset($_SESSION['user'])): ?>
-                <div class="d-inline-flex align-items-center gap-1 p-1 rounded-md border" style="background:#fafafa; border-color:#e4e4e7 !important;">
+                <?php 
+                $active_role = $_SESSION['user']['role'] ?? ''; 
+                // Normalisasi karyawan/customer
+                $is_karyawan = ($active_role === 'karyawan' || $active_role === 'customer');
+                $is_helpdesk = ($active_role === 'helpdesk');
+                $is_teknisi  = ($active_role === 'teknisi');
+                $is_manager  = ($active_role === 'manager');
+                $is_admin    = ($active_role === 'admin');
+                ?>
+                <div class="d-inline-flex align-items-center gap-1 p-1 rounded-md border shadow-xs" style="background:#fafafa; border-color:#e4e4e7 !important;">
                     <span class="small me-1 text-secondary fw-semibold" style="font-size:0.72rem;"><i class="fas fa-user-switch text-dark"></i> Switch Demo:</span>
-                    <a href="<?= base_url('auth/login.php?quick_login=karyawan') ?>" class="btn btn-xs py-0 px-2 rounded-md" style="font-size:0.68rem; font-weight:500; background:#ffffff; color:#18181b; border:1px solid #e4e4e7;" title="Login sebagai PIC Klien B2B">PIC Klien</a>
-                    <a href="<?= base_url('auth/login.php?quick_login=helpdesk') ?>" class="btn btn-xs py-0 px-2 rounded-md" style="font-size:0.68rem; font-weight:500; background:#ffffff; color:#18181b; border:1px solid #e4e4e7;" title="Login sebagai Helpdesk / NOC">NOC Helpdesk</a>
-                    <a href="<?= base_url('auth/login.php?quick_login=teknisi') ?>" class="btn btn-xs py-0 px-2 rounded-md" style="font-size:0.68rem; font-weight:500; background:#ffffff; color:#18181b; border:1px solid #e4e4e7;" title="Login sebagai Field Engineer">Teknisi</a>
-                    <a href="<?= base_url('auth/login.php?quick_login=manager') ?>" class="btn btn-xs py-0 px-2 rounded-md" style="font-size:0.68rem; font-weight:500; background:#ffffff; color:#18181b; border:1px solid #e4e4e7;" title="Login sebagai Manager SLA">Manager</a>
-                    <a href="<?= base_url('auth/login.php?quick_login=admin') ?>" class="btn btn-xs py-0 px-2 rounded-md" style="font-size:0.68rem; font-weight:500; background:#ffffff; color:#18181b; border:1px solid #e4e4e7;" title="Login sebagai Admin Master">Admin</a>
+                    
+                    <a href="<?= base_url('auth/login.php?quick_login=karyawan') ?>" 
+                       class="btn btn-xs py-1 px-2 rounded-md <?= $is_karyawan ? 'fw-bold' : '' ?>" 
+                       style="font-size:0.68rem; <?= $is_karyawan ? 'background:#18181b !important; color:#ffffff !important; border:1px solid #18181b !important; box-shadow:0 1px 2px rgba(0,0,0,0.1);' : 'background:#ffffff; color:#52525b; border:1px solid #e4e4e7;' ?>" 
+                       title="Login sebagai PIC Klien B2B">
+                        <?= $is_karyawan ? '<i class="fas fa-check-circle me-1" style="font-size:0.65rem; color:#22c55e;"></i>' : '' ?>PIC Klien
+                    </a>
+                    
+                    <a href="<?= base_url('auth/login.php?quick_login=helpdesk') ?>" 
+                       class="btn btn-xs py-1 px-2 rounded-md <?= $is_helpdesk ? 'fw-bold' : '' ?>" 
+                       style="font-size:0.68rem; <?= $is_helpdesk ? 'background:#18181b !important; color:#ffffff !important; border:1px solid #18181b !important; box-shadow:0 1px 2px rgba(0,0,0,0.1);' : 'background:#ffffff; color:#52525b; border:1px solid #e4e4e7;' ?>" 
+                       title="Login sebagai Helpdesk / NOC">
+                        <?= $is_helpdesk ? '<i class="fas fa-check-circle me-1" style="font-size:0.65rem; color:#22c55e;"></i>' : '' ?>NOC Helpdesk
+                    </a>
+                    
+                    <a href="<?= base_url('auth/login.php?quick_login=teknisi') ?>" 
+                       class="btn btn-xs py-1 px-2 rounded-md <?= $is_teknisi ? 'fw-bold' : '' ?>" 
+                       style="font-size:0.68rem; <?= $is_teknisi ? 'background:#18181b !important; color:#ffffff !important; border:1px solid #18181b !important; box-shadow:0 1px 2px rgba(0,0,0,0.1);' : 'background:#ffffff; color:#52525b; border:1px solid #e4e4e7;' ?>" 
+                       title="Login sebagai Field Engineer">
+                        <?= $is_teknisi ? '<i class="fas fa-check-circle me-1" style="font-size:0.65rem; color:#22c55e;"></i>' : '' ?>Teknisi
+                    </a>
+                    
+                    <a href="<?= base_url('auth/login.php?quick_login=manager') ?>" 
+                       class="btn btn-xs py-1 px-2 rounded-md <?= $is_manager ? 'fw-bold' : '' ?>" 
+                       style="font-size:0.68rem; <?= $is_manager ? 'background:#18181b !important; color:#ffffff !important; border:1px solid #18181b !important; box-shadow:0 1px 2px rgba(0,0,0,0.1);' : 'background:#ffffff; color:#52525b; border:1px solid #e4e4e7;' ?>" 
+                       title="Login sebagai Manager SLA">
+                        <?= $is_manager ? '<i class="fas fa-check-circle me-1" style="font-size:0.65rem; color:#22c55e;"></i>' : '' ?>Manager
+                    </a>
+                    
+                    <a href="<?= base_url('auth/login.php?quick_login=admin') ?>" 
+                       class="btn btn-xs py-1 px-2 rounded-md <?= $is_admin ? 'fw-bold' : '' ?>" 
+                       style="font-size:0.68rem; <?= $is_admin ? 'background:#18181b !important; color:#ffffff !important; border:1px solid #18181b !important; box-shadow:0 1px 2px rgba(0,0,0,0.1);' : 'background:#ffffff; color:#52525b; border:1px solid #e4e4e7;' ?>" 
+                       title="Login sebagai Admin Master">
+                        <?= $is_admin ? '<i class="fas fa-check-circle me-1" style="font-size:0.65rem; color:#22c55e;"></i>' : '' ?>Admin
+                    </a>
                 </div>
                 <?php endif; ?>
             </div>
