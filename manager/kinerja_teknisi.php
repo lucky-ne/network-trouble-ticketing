@@ -29,6 +29,7 @@ $sql_tek = "SELECT
     SUM(CASE WHEN t.status IN ('resolved', 'closed') THEN 1 ELSE 0 END) AS total_done,
     SUM(CASE WHEN t.status IN ('open', 'assigned', 'in_progress') THEN 1 ELSE 0 END) AS total_active,
     SUM(CASE WHEN t.sla_status = 'within_sla' THEN 1 ELSE 0 END) AS on_time_sla,
+    SUM(CASE WHEN t.sla_status = 'exempted' THEN 1 ELSE 0 END) AS exempted_sla,
     SUM(CASE WHEN t.sla_status = 'breached' THEN 1 ELSE 0 END) AS breached_sla,
     AVG(CASE WHEN t.status IN ('resolved', 'closed') THEN t.resolution_time_minutes ELSE NULL END) AS avg_minutes
 FROM users u
@@ -56,6 +57,7 @@ $total_engineers = count($tek_performance);
 $grand_assigned  = 0;
 $grand_done      = 0;
 $grand_ontime    = 0;
+$grand_exempted  = 0;
 $grand_breached  = 0;
 $total_minutes   = 0;
 $engineers_with_time = 0;
@@ -64,6 +66,7 @@ foreach ($tek_performance as $tp) {
     $grand_assigned += (int)$tp['total_assigned'];
     $grand_done     += (int)$tp['total_done'];
     $grand_ontime   += (int)$tp['on_time_sla'];
+    $grand_exempted += (int)$tp['exempted_sla'];
     $grand_breached += (int)$tp['breached_sla'];
     if ($tp['avg_minutes'] !== null) {
         $total_minutes += (float)$tp['avg_minutes'];
@@ -71,7 +74,8 @@ foreach ($tek_performance as $tp) {
     }
 }
 
-$grand_sla_rate = ($grand_done > 0) ? round(($grand_ontime / $grand_done) * 100, 1) : 100;
+$grand_chargeable = $grand_done - $grand_exempted;
+$grand_sla_rate = ($grand_chargeable > 0) ? round(($grand_ontime / $grand_chargeable) * 100, 1) : 100;
 $overall_avg_minutes = ($engineers_with_time > 0) ? round($total_minutes / $engineers_with_time) : 0;
 
 $page_title = 'Kinerja & Produktivitas Field Engineer';
@@ -178,6 +182,7 @@ require_once __DIR__ . '/../includes/header.php';
                         <th class="text-center">Sedang Proses</th>
                         <th class="text-center">Selesai (Resolved)</th>
                         <th class="text-center">On-Time SLA</th>
+                        <th class="text-center">Exempted (Force Majeure)</th>
                         <th class="text-center">Breached (Late)</th>
                         <th>Avg. MTTR</th>
                         <th class="text-center">SLA Compliance</th>
@@ -187,7 +192,8 @@ require_once __DIR__ . '/../includes/header.php';
                     <?php 
                     $no = 1; 
                     foreach ($tek_performance as $tek): 
-                        $rate = ($tek['total_done'] > 0) ? round(($tek['on_time_sla'] / $tek['total_done']) * 100, 1) : 100;
+                        $tek_chargeable = (int)$tek['total_done'] - (int)$tek['exempted_sla'];
+                        $rate = ($tek_chargeable > 0) ? round(((int)$tek['on_time_sla'] / $tek_chargeable) * 100, 1) : 100;
                         $rate_badge = ($rate >= 95) ? 'bg-success' : (($rate >= 80) ? 'bg-warning text-dark' : 'bg-danger');
                     ?>
                         <tr>
@@ -215,6 +221,13 @@ require_once __DIR__ . '/../includes/header.php';
                             </td>
                             <td class="text-center">
                                 <span class="badge bg-success-subtle text-success border border-success-subtle"><?= $tek['on_time_sla'] ?></span>
+                            </td>
+                            <td class="text-center">
+                                <?php if ($tek['exempted_sla'] > 0): ?>
+                                    <span class="badge text-purple" style="background:#f5f3ff; color:#7c3aed; border: 1px solid #ddd6fe;"><?= $tek['exempted_sla'] ?></span>
+                                <?php else: ?>
+                                    <span class="text-muted small">0</span>
+                                <?php endif; ?>
                             </td>
                             <td class="text-center">
                                 <?php if ($tek['breached_sla'] > 0): ?>

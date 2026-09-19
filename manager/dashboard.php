@@ -13,6 +13,7 @@ $kpi_query = $pdo->query("SELECT
     COUNT(*) AS total_tickets,
     SUM(CASE WHEN status IN ('resolved', 'closed') THEN 1 ELSE 0 END) AS total_resolved,
     SUM(CASE WHEN sla_status = 'within_sla' THEN 1 ELSE 0 END) AS total_within_sla,
+    SUM(CASE WHEN sla_status = 'exempted' THEN 1 ELSE 0 END) AS total_exempted,
     SUM(CASE WHEN sla_status = 'breached' THEN 1 ELSE 0 END) AS total_breached,
     AVG(CASE WHEN status IN ('resolved', 'closed') THEN resolution_time_minutes ELSE NULL END) AS avg_resolution_time
 FROM tickets");
@@ -20,9 +21,13 @@ $kpi = $kpi_query->fetch();
 
 $total_completed = (int)$kpi['total_resolved'];
 $within_sla = (int)$kpi['total_within_sla'];
+$exempted_sla = (int)$kpi['total_exempted'];
 $breached_sla = (int)$kpi['total_breached'];
 $avg_mins = round((float)($kpi['avg_resolution_time'] ?? 0));
-$sla_compliance_rate = ($total_completed > 0) ? round(($within_sla / $total_completed) * 100, 1) : 100;
+
+// SLA rate: Tiket exempted tidak dihitung sebagai penalti denda
+$chargeable_completed = $total_completed - $exempted_sla;
+$sla_compliance_rate = ($chargeable_completed > 0) ? round(($within_sla / $chargeable_completed) * 100, 1) : 100;
 
 // 2. DATA PERFORMA SLA PER PERUSAHAAN KLIEN B2B
 $client_sla_query = $pdo->query("SELECT 
@@ -35,6 +40,7 @@ $client_sla_query = $pdo->query("SELECT
     COUNT(t.id) AS total_tickets,
     SUM(CASE WHEN t.status IN ('resolved', 'closed') THEN 1 ELSE 0 END) AS resolved_tickets,
     SUM(CASE WHEN t.sla_status = 'within_sla' THEN 1 ELSE 0 END) AS on_time_tickets,
+    SUM(CASE WHEN t.sla_status = 'exempted' THEN 1 ELSE 0 END) AS exempted_tickets,
     SUM(CASE WHEN t.sla_status = 'breached' THEN 1 ELSE 0 END) AS breached_tickets,
     AVG(CASE WHEN t.status IN ('resolved', 'closed') THEN t.resolution_time_minutes ELSE NULL END) AS avg_mins
 FROM clients cl
@@ -63,6 +69,7 @@ $tek_query = $pdo->query("SELECT
     COUNT(t.id) AS total_assigned,
     SUM(CASE WHEN t.status IN ('resolved', 'closed') THEN 1 ELSE 0 END) AS total_done,
     SUM(CASE WHEN t.sla_status = 'within_sla' THEN 1 ELSE 0 END) AS on_time_sla,
+    SUM(CASE WHEN t.sla_status = 'exempted' THEN 1 ELSE 0 END) AS exempted_sla,
     SUM(CASE WHEN t.sla_status = 'breached' THEN 1 ELSE 0 END) AS breached_sla,
     AVG(CASE WHEN t.status IN ('resolved', 'closed') THEN t.resolution_time_minutes ELSE NULL END) AS avg_minutes
 FROM users u
@@ -136,14 +143,14 @@ include __DIR__ . '/../includes/header.php';
                 <thead>
                     <tr>
                         <th>Perusahaan Klien</th>
-                        <th>Sirkit (CID)</th>
+                        <th style="width: 140px;">Sirkit (CID)</th>
                         <th>Jenis Layanan B2B</th>
-                        <th>Target SLA</th>
-                        <th>Total Tiket</th>
-                        <th>On-Time</th>
-                        <th>Breached</th>
-                        <th>Rata-rata MTTR</th>
-                        <th>Realisasi SLA %</th>
+                        <th style="width: 95px;" class="text-center">Target SLA</th>
+                        <th style="width: 90px;" class="text-center">Total Tiket</th>
+                        <th style="width: 90px;" class="text-center">On-Time</th>
+                        <th style="width: 90px;" class="text-center">Breached</th>
+                        <th style="width: 120px;">Rata-rata MTTR</th>
+                        <th style="width: 140px;">Realisasi SLA %</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -156,20 +163,20 @@ include __DIR__ . '/../includes/header.php';
                         <tr>
                             <td>
                                 <div class="fw-semibold text-dark"><?= htmlspecialchars($cs['company_name']) ?></div>
-                                <small class="text-muted"><?= htmlspecialchars($cs['company_code']) ?></small>
+                                <small class="text-secondary"><?= htmlspecialchars($cs['company_code']) ?></small>
                             </td>
                             <td>
                                 <span class="circuit-badge"><?= htmlspecialchars($cs['circuit_id']) ?></span>
                             </td>
                             <td>
-                                <span class="small"><?= htmlspecialchars($cs['service_type']) ?></span>
+                                <span class="small text-dark"><?= htmlspecialchars($cs['service_type']) ?></span>
                             </td>
-                            <td>
+                            <td class="text-center">
                                 <span class="badge bg-info text-dark"><?= $cs['sla_target_pct'] ?>%</span>
                             </td>
-                            <td class="fw-bold"><?= $cs['total_tickets'] ?></td>
-                            <td class="text-success fw-bold"><?= $c_ontime ?></td>
-                            <td class="text-danger fw-bold"><?= $cs['breached_tickets'] ?></td>
+                            <td class="text-center fw-bold"><?= $cs['total_tickets'] ?></td>
+                            <td class="text-center text-success fw-bold"><?= $c_ontime ?></td>
+                            <td class="text-center text-danger fw-bold"><?= $cs['breached_tickets'] ?></td>
                             <td><?= format_duration_minutes($cs['avg_mins']) ?></td>
                             <td>
                                 <div class="d-flex align-items-center gap-2">
@@ -213,11 +220,11 @@ include __DIR__ . '/../includes/header.php';
                         <thead>
                             <tr>
                                 <th>Nama Teknisi</th>
-                                <th>Ditugaskan</th>
-                                <th>Selesai</th>
-                                <th>On-Time</th>
-                                <th>Breached</th>
-                                <th>Rata-rata MTTR</th>
+                                <th class="text-center" style="width: 80px;">Ditugaskan</th>
+                                <th class="text-center" style="width: 75px;">Selesai</th>
+                                <th class="text-center" style="width: 75px;">On-Time</th>
+                                <th class="text-center" style="width: 75px;">Breached</th>
+                                <th style="width: 110px;">Avg. MTTR</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -226,10 +233,10 @@ include __DIR__ . '/../includes/header.php';
                                     <td class="fw-semibold text-dark">
                                         <i class="fas fa-user-circle text-primary me-1"></i> <?= htmlspecialchars($tp['name']) ?>
                                     </td>
-                                    <td><?= $tp['total_assigned'] ?></td>
-                                    <td class="fw-bold text-success"><?= $tp['total_done'] ?></td>
-                                    <td class="text-success"><?= $tp['on_time_sla'] ?></td>
-                                    <td class="text-danger"><?= $tp['breached_sla'] ?></td>
+                                    <td class="text-center"><?= $tp['total_assigned'] ?></td>
+                                    <td class="text-center fw-bold text-success"><?= $tp['total_done'] ?></td>
+                                    <td class="text-center text-success"><?= $tp['on_time_sla'] ?></td>
+                                    <td class="text-center text-danger"><?= $tp['breached_sla'] ?></td>
                                     <td><?= format_duration_minutes($tp['avg_minutes']) ?></td>
                                 </tr>
                             <?php endforeach; ?>

@@ -120,15 +120,15 @@ include __DIR__ . '/../includes/header.php';
             <table class="table table-b2b table-hover align-middle datatable w-100">
                 <thead>
                     <tr>
-                        <th>No</th>
+                        <th style="width: 45px;" class="text-center">No</th>
                         <th>Perusahaan Klien</th>
-                        <th>Sirkit (CID)</th>
+                        <th style="width: 140px;">Sirkit (CID)</th>
                         <th>Jenis Layanan B2B</th>
-                        <th>Bandwidth</th>
+                        <th style="width: 110px;">Bandwidth</th>
                         <th>PIC & Kontak</th>
-                        <th>Target SLA</th>
-                        <th>Status</th>
-                        <th class="text-center">Aksi</th>
+                        <th style="width: 95px;" class="text-center">Target SLA</th>
+                        <th style="width: 90px;" class="text-center">Status</th>
+                        <th style="width: 90px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>

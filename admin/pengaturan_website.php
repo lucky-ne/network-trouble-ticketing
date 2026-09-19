@@ -52,12 +52,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && (!isset($_POST['action']) || $_POST
         'smtp_user',
         'smtp_pass',
         'smtp_from_name',
-        'smtp_from_email'
+        'smtp_from_email',
+        'outage_broadcast_active',
+        'outage_broadcast_title',
+        'outage_broadcast_message',
+        'outage_broadcast_area',
+        'outage_broadcast_eta',
+        'outage_broadcast_level'
     ];
 
     // Checkbox smtp_enabled fallback to 0 if not checked
     if (!isset($_POST['smtp_enabled'])) {
         $_POST['smtp_enabled'] = '0';
+    }
+    // Checkbox outage_broadcast_active fallback to 0 if not checked
+    if (!isset($_POST['outage_broadcast_active'])) {
+        $_POST['outage_broadcast_active'] = '0';
     }
 
     $updated_count = 0;
@@ -94,6 +104,14 @@ $smtp_user           = get_setting('smtp_user', '');
 $smtp_pass           = get_setting('smtp_pass', '');
 $smtp_from_name      = get_setting('smtp_from_name', 'NetTicket SLA Support');
 $smtp_from_email     = get_setting('smtp_from_email', '');
+
+// Konfigurasi Broadcast Gangguan Massal
+$outage_broadcast_active  = get_setting('outage_broadcast_active', '0');
+$outage_broadcast_title   = get_setting('outage_broadcast_title', 'Pemberitahuan: Gangguan Massal Kabel Fiber Optic Backbone');
+$outage_broadcast_message = get_setting('outage_broadcast_message', 'Terjadi putus kabel Fiber Optic Backbone akibat pekerjaan galian utilitas kota pihak ketiga. Tim Fiber Optic Splicer sedang melakukan perbaikan darurat di lokasi.');
+$outage_broadcast_area    = get_setting('outage_broadcast_area', 'Sudirman, MH Thamrin, Kuningan & Sekitarnya');
+$outage_broadcast_eta     = get_setting('outage_broadcast_eta', '4 Jam (Estimasi Normal: 16:30 WIB)');
+$outage_broadcast_level   = get_setting('outage_broadcast_level', 'danger');
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
@@ -283,11 +301,69 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
             </div>
 
-            <!-- Bagian 4: Footer & Parameter SLA -->
+            <!-- Bagian 4: Siaran Darurat Gangguan Massal (Outage Broadcast) -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4 border-start border-4 border-danger">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="fas fa-tower-broadcast text-danger me-2"></i>4. Siaran Darurat Gangguan Massal (Outage Broadcast)
+                    </h5>
+                    <span class="badge <?= ($outage_broadcast_active === '1') ? 'bg-danger' : 'bg-secondary' ?>">
+                        <?= ($outage_broadcast_active === '1') ? 'Siaran AKTIF' : 'Siaran Nonaktif' ?>
+                    </span>
+                </div>
+                <div class="card-body pt-0">
+                    <p class="text-muted small mb-3">
+                        Pancarkan banner pengumuman darurat di bagian paling atas portal <strong>seluruh Klien Korporat B2B</strong> dan internal saat terjadi gangguan skala besar (misal: Backbone FO Cut, gangguan gardu PLN, atau force majeure).
+                    </p>
+
+                    <div class="p-3 mb-3 rounded-3 border" style="background:#fef2f2; border-color:#fecaca !important;">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="outage_broadcast_active" value="1" id="outage_broadcast_active" <?= ($outage_broadcast_active === '1') ? 'checked' : '' ?>>
+                            <label class="form-check-label fw-bold text-danger" for="outage_broadcast_active">
+                                Aktifkan Banner Pengumuman Gangguan Massal ke Seluruh Klien
+                            </label>
+                        </div>
+                        <small class="text-muted d-block mt-1">Saat dicentang, banner merah dengan animasi pulsasi darurat akan langsung tampil di seluruh portal.</small>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small text-secondary">Judul Insiden Gangguan Massal <span class="text-danger">*</span></label>
+                            <input type="text" name="outage_broadcast_title" class="form-control" value="<?= htmlspecialchars($outage_broadcast_title) ?>" placeholder="Contoh: Pemberitahuan: Gangguan Massal Kabel Fiber Optic Backbone">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small text-secondary">Deskripsi Insiden & Penjelasan Teknis <span class="text-danger">*</span></label>
+                            <textarea name="outage_broadcast_message" class="form-control" rows="3" placeholder="Jelaskan kronologi singkat dan status investigasi teknis..."><?= htmlspecialchars($outage_broadcast_message) ?></textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Wilayah / Area Site Terdampak</label>
+                            <input type="text" name="outage_broadcast_area" class="form-control" value="<?= htmlspecialchars($outage_broadcast_area) ?>" placeholder="Contoh: Kawasan Sudirman - Thamrin & Kuningan">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small text-secondary">Estimasi Waktu Normalisasi (ETA)</label>
+                            <input type="text" name="outage_broadcast_eta" class="form-control" value="<?= htmlspecialchars($outage_broadcast_eta) ?>" placeholder="Contoh: 4 Jam (Estimasi Normal: 16:30 WIB)">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small text-secondary">Tingkat Urgensi Peringatan</label>
+                            <select name="outage_broadcast_level" class="form-select">
+                                <option value="danger" <?= ($outage_broadcast_level === 'danger') ? 'selected' : '' ?>>Bahaya / Critical Outage (Merah)</option>
+                                <option value="warning" <?= ($outage_broadcast_level === 'warning') ? 'selected' : '' ?>>Peringatan / Degradasi Ringan (Kuning)</option>
+                                <option value="info" <?= ($outage_broadcast_level === 'info') ? 'selected' : '' ?>>Informasi / Scheduled Maintenance (Biru)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bagian 5: Footer & Parameter SLA -->
             <div class="card border-0 shadow-sm rounded-4 mb-4">
                 <div class="card-header bg-white py-3 border-0">
                     <h5 class="fw-bold mb-0 text-dark">
-                        <i class="fas fa-cog text-warning me-2"></i>4. Keterangan Footer & Parameter SLA
+                        <i class="fas fa-cog text-warning me-2"></i>5. Keterangan Footer & Parameter SLA
                     </h5>
                 </div>
                 <div class="card-body pt-0">

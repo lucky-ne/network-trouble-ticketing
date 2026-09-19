@@ -138,13 +138,13 @@ require_once __DIR__ . '/../includes/header.php';
             <table class="table table-b2b table-hover align-middle datatable w-100">
                 <thead>
                     <tr>
-                        <th>NIP / ID</th>
-                        <th>Nama Lengkap</th>
-                        <th>Email Akun</th>
-                        <th>Peran (Role)</th>
+                        <th style="width: 110px;">NIP / ID</th>
+                        <th style="width: 170px;">Nama Lengkap</th>
+                        <th style="width: 180px;">Email Akun</th>
+                        <th style="width: 130px;">Peran (Role)</th>
                         <th>Perusahaan / Divisi</th>
-                        <th>No. Telepon</th>
-                        <th class="text-center">Aksi</th>
+                        <th style="width: 130px;">No. Telepon</th>
+                        <th style="width: 110px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>

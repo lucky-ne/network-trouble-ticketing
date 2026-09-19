@@ -20,6 +20,7 @@ $sql_tek = "SELECT
     COUNT(t.id) AS total_assigned,
     SUM(CASE WHEN t.status IN ('resolved', 'closed') THEN 1 ELSE 0 END) AS total_done,
     SUM(CASE WHEN t.sla_status = 'within_sla' THEN 1 ELSE 0 END) AS on_time_sla,
+    SUM(CASE WHEN t.sla_status = 'exempted' THEN 1 ELSE 0 END) AS exempted_sla,
     SUM(CASE WHEN t.sla_status = 'breached' THEN 1 ELSE 0 END) AS breached_sla,
     AVG(CASE WHEN t.status IN ('resolved', 'closed') THEN t.resolution_time_minutes ELSE NULL END) AS avg_minutes
 FROM users u
@@ -316,12 +317,13 @@ $page_title = 'Laporan Kinerja Field Engineer B2B';
         <thead class="text-center">
             <tr>
                 <th style="width: 5%;">No</th>
-                <th style="width: 30%; text-align: left;">Nama Field Engineer</th>
-                <th style="width: 14%;">Ditugaskan</th>
-                <th style="width: 14%;">Selesai</th>
-                <th style="width: 12%;">On-Time</th>
-                <th style="width: 12%;">Breached</th>
-                <th style="width: 13%;">SLA Rate (%)</th>
+                <th style="width: 28%; text-align: left;">Nama Field Engineer</th>
+                <th style="width: 12%;">Ditugaskan</th>
+                <th style="width: 12%;">Selesai</th>
+                <th style="width: 11%;">On-Time</th>
+                <th style="width: 11%;">Exempted</th>
+                <th style="width: 10%;">Breached</th>
+                <th style="width: 11%;">SLA Rate (%)</th>
             </tr>
         </thead>
         <tbody>
@@ -329,7 +331,9 @@ $page_title = 'Laporan Kinerja Field Engineer B2B';
                 <?php 
                 $done = (int)$tp['total_done'];
                 $ontime = (int)$tp['on_time_sla'];
-                $rate = ($done > 0) ? round(($ontime / $done) * 100, 1) : 100;
+                $exempted = (int)$tp['exempted_sla'];
+                $chargeable = $done - $exempted;
+                $rate = ($chargeable > 0) ? round(($ontime / $chargeable) * 100, 1) : 100;
                 ?>
                 <tr>
                     <td class="text-center"><?= $no++ ?></td>
@@ -340,6 +344,7 @@ $page_title = 'Laporan Kinerja Field Engineer B2B';
                     <td class="text-center"><?= $tp['total_assigned'] ?></td>
                     <td class="text-center fw-bold text-success"><?= $done ?></td>
                     <td class="text-center text-success"><?= $ontime ?></td>
+                    <td class="text-center" style="color:#7c3aed;"><?= $exempted ?></td>
                     <td class="text-center text-danger"><?= $tp['breached_sla'] ?></td>
                     <td class="text-center fw-bold <?= ($rate >= 90) ? 'text-success' : 'text-danger' ?>"><?= $rate ?>%</td>
                 </tr>

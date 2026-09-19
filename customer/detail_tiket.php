@@ -166,7 +166,7 @@ include __DIR__ . '/../includes/header.php';
         </div>
         <?php if ($current_role !== 'karyawan'): ?>
             <div class="mt-1">
-                <?= get_sla_badge($ticket['sla_status'], $ticket['sla_deadline'], $ticket['resolved_at']) ?>
+                <?= get_sla_badge($ticket['sla_status'], $ticket['sla_deadline'], $ticket['resolved_at'], $ticket['sla_exemption_reason'] ?? null) ?>
             </div>
         <?php endif; ?>
     </div>
@@ -316,6 +316,18 @@ include __DIR__ . '/../includes/header.php';
                             <div>
                                 <strong class="small text-dark">Catatan Teknis Field Engineer:</strong>
                                 <p class="mb-0 text-dark small"><?= nl2br(htmlspecialchars($ticket['technician_notes'])) ?></p>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($ticket['sla_status'] === 'exempted'): ?>
+                            <div class="mt-3 p-3 rounded border" style="background:#f5f3ff; border-color:#ddd6fe !important;">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <span class="badge" style="background:#7c3aed; color:#fff;"><i class="fas fa-shield-alt me-1"></i> SLA EXEMPTED</span>
+                                    <strong class="text-dark small">Klausul Pengecualian Penalti SLA Aktif (Force Majeure / SLA Exclusion)</strong>
+                                </div>
+                                <div class="small text-secondary" style="font-size:0.8125rem;">
+                                    <strong>Alasan:</strong> <?= htmlspecialchars($ticket['sla_exemption_reason'] ?? 'Gangguan Massal / Force Majeure') ?>.
+                                    Berdasarkan kontrak SLA B2B, penanganan gangguan ini dikecualikan dari perhitungan penalti SLA bulanan.
+                                </div>
                             </div>
                         <?php endif; ?>
                     </div>

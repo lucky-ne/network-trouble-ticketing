@@ -462,50 +462,72 @@ code, kbd, samp, pre, .font-monospace, .code-mono, .code-sm {
 }
 
 .table,
-.table-b2b {
-  margin-bottom: 0;
-  font-size: 0.8125rem; /* 13px */
-  color: var(--zinc-900);
+.table-b2b,
+table.dataTable {
+  margin-bottom: 0 !important;
+  font-size: 0.8125rem !important; /* 13px */
+  color: var(--zinc-900) !important;
+  border-collapse: collapse !important;
+  width: 100% !important;
 }
 
 .table thead th,
-.table-b2b thead th {
-  background-color: var(--zinc-50);
-  color: var(--zinc-500);
-  font-weight: 500;
-  text-transform: uppercase;
-  font-size: 0.72rem;
-  letter-spacing: 0.02em;
-  border-bottom: 1px solid var(--zinc-200);
-  padding: 0.65rem 1rem;
-  vertical-align: middle;
-  white-space: nowrap;
+.table-b2b thead th,
+table.dataTable thead th {
+  background-color: #f8fafc !important;
+  color: var(--zinc-700) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.03em !important;
+  border-bottom: 1px solid var(--zinc-200) !important;
+  padding: 0.75rem 0.85rem !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+}
+
+.table tbody tr,
+.table-b2b tbody tr,
+table.dataTable tbody tr,
+table.dataTable.stripe tbody tr.odd,
+table.dataTable.display tbody tr.odd,
+table.dataTable.stripe tbody tr.even,
+table.dataTable.display tbody tr.even {
+  background-color: #ffffff !important;
+  transition: background-color 0.15s ease;
 }
 
 .table tbody td,
-.table-b2b tbody td {
-  padding: 0.75rem 1rem;
-  vertical-align: middle;
-  border-bottom: 1px solid var(--zinc-100);
+.table-b2b tbody td,
+table.dataTable tbody td {
+  padding: 0.75rem 0.85rem !important;
+  vertical-align: middle !important;
+  border-bottom: 1px solid var(--zinc-100) !important;
   font-variant-numeric: tabular-nums;
-}
-
-.table tbody tr:last-child td,
-.table-b2b tbody tr:last-child td {
-  border-bottom: none;
+  background-color: transparent !important;
 }
 
 .table tbody tr:hover,
-.table-b2b tbody tr:hover {
-  background-color: #f9fafb;
+.table-b2b tbody tr:hover,
+table.dataTable tbody tr:hover,
+table.dataTable.display tbody tr:hover {
+  background-color: #f1f5f9 !important;
+}
+
+.table tbody tr:last-child td,
+.table-b2b tbody tr:last-child td,
+table.dataTable tbody tr:last-child td {
+  border-bottom: none !important;
 }
 
 .table tbody td.font-monospace,
 .table-b2b tbody td.font-monospace,
-.table-b2b tbody td:first-child a {
+.table-b2b tbody td:first-child a,
+table.dataTable tbody td:first-child a {
   white-space: nowrap !important;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 /* ==========================================================

@@ -108,7 +108,11 @@ CREATE TABLE `tickets` (
   `resolved_at` DATETIME NULL COMMENT 'Saat teknisi menyelesaikan perbaikan',
   `closed_at` DATETIME NULL,
   `sla_deadline` DATETIME NULL COMMENT 'created_at + sla_hours',
-  `sla_status` ENUM('pending', 'within_sla', 'breached') DEFAULT 'pending',
+  `sla_status` ENUM('pending', 'within_sla', 'breached', 'exempted') DEFAULT 'pending',
+  `sla_exemption_reason` VARCHAR(255) NULL COMMENT 'Alasan Pengecualian SLA: Force Majeure / Backbone FO Cut / Third-Party / Maintenance',
+  `is_outage_massal` TINYINT(1) DEFAULT 0 COMMENT 'Flag Gangguan Massal (1=Ya, 0=Tidak)',
+  `sla_paused_at` DATETIME NULL COMMENT 'Saat SLA Clock dijeda',
+  `sla_paused_total_minutes` INT DEFAULT 0 COMMENT 'Total akumulasi jeda waktu SLA dalam menit',
   `resolution_time_minutes` INT NULL COMMENT 'Durasi pengerjaan dalam menit',
   `technician_notes` TEXT NULL COMMENT 'Berita Acara & Tindakan Perbaikan',
   `root_cause` VARCHAR(255) NULL COMMENT 'Penyebab Gangguan',
@@ -149,16 +153,17 @@ INSERT INTO `clients` (`id`, `company_name`, `company_code`, `circuit_id`, `serv
 -- Password 'password' hash: $2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi
 INSERT INTO `users` (`id`, `nip`, `name`, `email`, `password`, `role`, `client_id`, `department`, `phone`) VALUES
 -- PIC Klien B2B (Role: karyawan)
-(1, 'PIC-SML-01', 'Budi Santoso (PIC PT Sinarmas)', 'budi@perusahaan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'karyawan', 1, 'IT Infrastructure & Network Officer', '081234567890'),
-(2, 'PIC-BCA-02', 'Siti Rahmawati (PIC Bank BCA)', 'siti@perusahaan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'karyawan', 2, 'IT Service Desk & Network Specialist', '081234567891'),
-(3, 'PIC-IDF-03', 'Eko Prasetyo (PIC PT Indofood)', 'eko@perusahaan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'karyawan', 3, 'Network Engineer Representative', '081234567896'),
+(1, 'PIC-SML-01', 'Budi Santoso', 'budi@perusahaan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'karyawan', 1, 'IT Infrastructure & Network Officer', '081234567890'),
+(2, 'PIC-BCA-02', 'Siti Rahmawati', 'siti@perusahaan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'karyawan', 2, 'IT Service Desk & Network Specialist', '081234567891'),
+(3, 'PIC-IDF-03', 'Eko Prasetyo', 'eko@perusahaan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'karyawan', 3, 'Network Engineer Representative', '081234567896'),
+(4, 'PIC-AST-04', 'Rina Marlina', 'rina@perusahaan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'karyawan', 4, 'IT Operations & Infrastructure', '081234567897'),
 
 -- Tim Internal PT. Visimedia Pratama Persada
-(4, 'HLP-VMI-01', 'Dimas Prasetyo (NOC Helpdesk)', 'helpdesk@perusahaan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'helpdesk', NULL, 'NOC & Customer Care B2B', '081234567892'),
-(5, 'TEK-VMI-01', 'Ahmad Fauzi (Field / Network Engineer 1)', 'ahmad.teknisi@perusahaan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'teknisi', NULL, 'B2B Field Engineering & Operations', '081234567893'),
-(6, 'TEK-VMI-02', 'Rian Hidayat (Field / Network Engineer 2)', 'rian.teknisi@perusahaan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'teknisi', NULL, 'B2B Field Engineering & Operations', '081234567894'),
-(7, 'MGR-VMI-01', 'Ir. Hendra Wijaya, M.Kom (Head of NOC)', 'manager.it@perusahaan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'manager', NULL, 'Service Delivery & NOC Management', '081234567895'),
-(8, 'ADM-VMI-01', 'Administrator Sistem (Admin Master)', 'admin@perusahaan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', NULL, 'IT Infrastructure & Web Operations', '081234567899');
+(5, 'HLP-VMI-01', 'Dimas Prasetyo', 'helpdesk@perusahaan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'helpdesk', NULL, 'NOC & Customer Care B2B', '081234567892'),
+(6, 'TEK-VMI-01', 'Ahmad Fauzi', 'ahmad.teknisi@perusahaan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'teknisi', NULL, 'B2B Field Engineering & Operations', '081234567893'),
+(7, 'TEK-VMI-02', 'Rian Hidayat', 'rian.teknisi@perusahaan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'teknisi', NULL, 'B2B Field Engineering & Operations', '081234567894'),
+(8, 'MGR-VMI-01', 'Ir. Hendra Wijaya, M.Kom', 'manager.it@perusahaan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'manager', NULL, 'Service Delivery & NOC Management', '081234567895'),
+(9, 'ADM-VMI-01', 'Administrator Sistem', 'admin@perusahaan.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', NULL, 'IT Infrastructure & Web Operations', '081234567899');
 
 -- 3. Data Pengaturan Website / Profil Sistem
 INSERT INTO `settings` (`setting_key`, `setting_value`, `setting_group`, `description`) VALUES
@@ -178,7 +183,13 @@ INSERT INTO `settings` (`setting_key`, `setting_value`, `setting_group`, `descri
 ('smtp_user', '', 'smtp', 'Alamat Email Gmail Pengirim / Username SMTP'),
 ('smtp_pass', '', 'smtp', 'Google App Password (16-digit Sandi Aplikasi)'),
 ('smtp_from_name', 'NOC PT. Visimedia Pratama Persada', 'smtp', 'Nama Pengirim Email Notifikasi'),
-('smtp_from_email', '', 'smtp', 'Email Pengirim');
+('smtp_from_email', '', 'smtp', 'Email Pengirim'),
+('outage_broadcast_active', '0', 'outage', 'Status Broadcast Gangguan Massal (1=Aktif, 0=Nonaktif)'),
+('outage_broadcast_title', 'Pemberitahuan: Gangguan Massal Kabel Fiber Optic Backbone', 'outage', 'Judul Insiden Gangguan Massal'),
+('outage_broadcast_message', 'Terjadi putus kabel Fiber Optic Backbone akibat pekerjaan galian utilitas kota pihak ketiga. Tim Fiber Optic Splicer sedang melakukan perbaikan darurat di lokasi.', 'outage', 'Deskripsi Pengumuman Gangguan Massal'),
+('outage_broadcast_area', 'Sudirman, MH Thamrin, Kuningan & Sekitarnya', 'outage', 'Wilayah / Area Site Terdampak'),
+('outage_broadcast_eta', '4 Jam (Estimasi Normal: 16:30 WIB)', 'outage', 'Perkiraan Waktu Normalisasi Layanan'),
+('outage_broadcast_level', 'danger', 'outage', 'Tingkat Urgensi Alert (danger / warning / info)');
 
 -- 4. Data Kategori Kendala Jaringan B2B
 INSERT INTO `categories` (`id`, `name`, `description`) VALUES
@@ -205,7 +216,7 @@ INSERT INTO `tickets` (
 ) VALUES
 -- Tiket 1: Selesai TEPAT WAKTU (Within SLA)
 (
-  1, 'TKT-20260901-001', 1, 1, 1, 1, 5,
+  1, 'TKT-20260901-001', 1, 1, 1, 1, 6,
   'CID-VMI-0101', 'Dedicated Internet Corporate',
   'Link Utama Dedicated Internet 500 Mbps Down Total (LOS Merah)',
   'Sejak pukul 08.15 WIB link sirkit utama mengalami Loss of Signal (LOS). Seluruh operasional kantor Sinar Mas Land Plaza tidak dapat mengakses internet publik.',
@@ -219,7 +230,7 @@ INSERT INTO `tickets` (
 
 -- Tiket 2: Selesai TERLAMBAT (Breached SLA)
 (
-  2, 'TKT-20260902-002', 2, 2, 2, 2, 5,
+  2, 'TKT-20260902-002', 2, 2, 2, 2, 6,
   'CID-VMI-0204', 'IP VPN MPLS Inter-Branch',
   'Intermittent Packet Loss 35% pada Link MPLS Menara BCA ke DC Cikarang',
   'Koneksi sinkronisasi data antar data center BCA mengalami packet loss tinggi dan jitter di atas 120ms.',
@@ -233,7 +244,7 @@ INSERT INTO `tickets` (
 
 -- Tiket 3: Sedang Dikerjakan (In Progress)
 (
-  3, 'TKT-20260905-003', 3, 3, 3, 3, 6,
+  3, 'TKT-20260905-003', 3, 3, 3, 3, 7,
   'CID-VMI-0315', 'Metro Ethernet Point-to-Point',
   'Flapping BGP Session pada Link Metro-E Indofood Tower ke Pabrik Cibitung',
   'BGP neighbor 10.200.15.1 sering state Active/Idle secara berkala setiap 15 menit.',
@@ -247,7 +258,7 @@ INSERT INTO `tickets` (
 
 -- Tiket 4: Baru Ditugaskan (Assigned)
 (
-  4, 'TKT-20260907-004', 1, 1, 4, 3, 5,
+  4, 'TKT-20260907-004', 1, 1, 4, 3, 6,
   'CID-VMI-0101', 'Dedicated Internet Corporate',
   'Throughput Download Tidak Mencapai Bandwidth Berlangganan 500 Mbps',
   'Hasil speedtest hanya mentok di 120 Mbps pada jam kerja sibuk.',
@@ -259,7 +270,7 @@ INSERT INTO `tickets` (
 
 -- Tiket 5: Tiket Baru Belum Ditugaskan (Open)
 (
-  5, 'TKT-20260907-005', 4, 1, 1, 1, NULL,
+  5, 'TKT-20260907-005', 4, 4, 1, 1, NULL,
   'CID-VMI-0422', 'Managed SD-WAN Corporate',
   'CPE SD-WAN Edge Gateway Menara Astra Padam Total (No Power)',
   'Perangkat SD-WAN Edge di ruang server lantai 35 tidak menyala sama sekali setelah maintenance kelistrikan gedung.',
@@ -272,16 +283,16 @@ INSERT INTO `tickets` (
 -- 7. Data Riwayat Ticket Logs
 INSERT INTO `ticket_logs` (`ticket_id`, `user_id`, `action`, `note`, `created_at`) VALUES
 (1, 1, 'Tiket Dibuat', 'PIC Klien (PT Sinarmas Land) melaporkan link dedicated internet 500 Mbps mengalami LOS merah.', '2026-09-01 08:30:00'),
-(1, 4, 'Tiket Ditugaskan', 'NOC Helpdesk memvalidasi sirkit CID-VMI-0101 dan menugaskan Field Engineer Ahmad Fauzi.', '2026-09-01 08:40:00'),
-(1, 5, 'Mulai Pengerjaan', 'Field Engineer tiba di Site Sinar Mas Land Plaza Lt. 15 untuk cek OTB dan kabel patch cord.', '2026-09-01 08:55:00'),
-(1, 5, 'Perbaikan Selesai', 'Patch cord fiber optic diganti baru, redaman -18.2 dBm. Tiket diselesaikan tepat waktu (Within SLA).', '2026-09-01 10:15:00'),
+(1, 5, 'Tiket Ditugaskan', 'NOC Helpdesk memvalidasi sirkit CID-VMI-0101 dan menugaskan Field Engineer Ahmad Fauzi.', '2026-09-01 08:40:00'),
+(1, 6, 'Mulai Pengerjaan', 'Field Engineer tiba di Site Sinar Mas Land Plaza Lt. 15 untuk cek OTB dan kabel patch cord.', '2026-09-01 08:55:00'),
+(1, 6, 'Perbaikan Selesai', 'Patch cord fiber optic diganti baru, redaman -18.2 dBm. Tiket diselesaikan tepat waktu (Within SLA).', '2026-09-01 10:15:00'),
 (1, 1, 'Tiket Ditutup', 'PIC PT Sinarmas mengonfirmasi link internet 500 Mbps sudah kembali normal & stabil.', '2026-09-01 10:45:00'),
 
 (2, 2, 'Tiket Dibuat', 'PIC Klien (Bank BCA) melaporkan packet loss 35% pada link MPLS CID-VMI-0204.', '2026-09-02 09:00:00'),
-(2, 4, 'Tiket Ditugaskan', 'NOC Helpdesk menugaskan Field Engineer Ahmad Fauzi untuk investigasi modul SFP di POP.', '2026-09-02 09:20:00'),
-(2, 5, 'Mulai Pengerjaan', 'Teknisi melakukan pengukuran optical power meter dan pengecekan suhu switch PE.', '2026-09-02 10:00:00'),
-(2, 5, 'Perbaikan Selesai', 'Modul transceiver SFP 10G LR diganti baru. Pengerjaan melebihi target waktu SLA (Breached).', '2026-09-02 14:30:00'),
+(2, 5, 'Tiket Ditugaskan', 'NOC Helpdesk menugaskan Field Engineer Ahmad Fauzi untuk investigasi modul SFP di POP.', '2026-09-02 09:20:00'),
+(2, 6, 'Mulai Pengerjaan', 'Teknisi melakukan pengukuran optical power meter dan pengecekan suhu switch PE.', '2026-09-02 10:00:00'),
+(2, 6, 'Perbaikan Selesai', 'Modul transceiver SFP 10G LR diganti baru. Pengerjaan melebihi target waktu SLA (Breached).', '2026-09-02 14:30:00'),
 
 (3, 3, 'Tiket Dibuat', 'PIC Klien (PT Indofood) melaporkan flapping BGP session pada link Metro-E CID-VMI-0315.', '2026-09-05 13:00:00'),
-(3, 4, 'Tiket Ditugaskan', 'NOC Helpdesk menugaskan Network Engineer Rian Hidayat untuk remote troubleshooting BGP.', '2026-09-05 13:15:00'),
-(3, 6, 'Mulai Pengerjaan', 'Network Engineer sedang analisa CRC error dan re-tuning MTU/hold-time di router edge.', '2026-09-05 13:30:00');
+(3, 5, 'Tiket Ditugaskan', 'NOC Helpdesk menugaskan Network Engineer Rian Hidayat untuk remote troubleshooting BGP.', '2026-09-05 13:15:00'),
+(3, 7, 'Mulai Pengerjaan', 'Network Engineer sedang analisa CRC error dan re-tuning MTU/hold-time di router edge.', '2026-09-05 13:30:00');

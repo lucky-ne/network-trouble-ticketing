@@ -63,6 +63,7 @@ $tickets = $stmt->fetchAll();
 $total_t = count($tickets);
 $total_resolved = 0;
 $total_within_sla = 0;
+$total_exempted = 0;
 $total_breached = 0;
 $total_minutes = 0;
 
@@ -72,13 +73,17 @@ foreach ($tickets as $t) {
         $total_minutes += (int)$t['resolution_time_minutes'];
         if ($t['sla_status'] === 'within_sla') {
             $total_within_sla++;
+        } elseif ($t['sla_status'] === 'exempted') {
+            $total_exempted++;
         } elseif ($t['sla_status'] === 'breached') {
             $total_breached++;
         }
     }
 }
 
-$sla_rate = ($total_resolved > 0) ? round(($total_within_sla / $total_resolved) * 100, 1) : 100;
+// Persentase SLA Kepatuhan: Tiket yang berstatus Exempted tidak dihitung sebagai penalti denda
+$chargeable_resolved = $total_resolved - $total_exempted;
+$sla_rate = ($chargeable_resolved > 0) ? round(($total_within_sla / $chargeable_resolved) * 100, 1) : 100;
 $avg_duration = ($total_resolved > 0) ? round($total_minutes / $total_resolved) : 0;
 
 $bulan_nama = [
@@ -297,7 +302,14 @@ include __DIR__ . '/../includes/header.php';
                         <td><?= format_date_indo($t['resolved_at']) ?></td>
                         <td class="text-center"><?= format_duration_minutes($t['resolution_time_minutes']) ?></td>
                         <td class="text-center fw-bold">
-                            <?php if ($t['sla_status'] === 'within_sla'): ?>
+                            <?php if ($t['sla_status'] === 'exempted'): ?>
+                                <span style="color:#7c3aed;">
+                                    <i class="fas fa-shield-alt me-1"></i>Exempted
+                                </span>
+                                <?php if (!empty($t['sla_exemption_reason'])): ?>
+                                    <div style="font-size: 0.68rem; font-weight: normal; color: #6b7280;"><?= htmlspecialchars($t['sla_exemption_reason']) ?></div>
+                                <?php endif; ?>
+                            <?php elseif ($t['sla_status'] === 'within_sla'): ?>
                                 <span class="text-success">On-Time</span>
                             <?php elseif ($t['sla_status'] === 'breached'): ?>
                                 <span class="text-danger">Breached</span>

@@ -209,29 +209,31 @@ include __DIR__ . '/../includes/header.php';
             <table class="table table-b2b table-hover align-middle datatable w-100 mb-0">
                 <thead>
                     <tr>
-                        <th style="width: 130px;">No. Tiket</th>
+                        <th style="width: 140px;">No. Tiket</th>
                         <th style="width: 160px;">Sirkit & Layanan</th>
                         <th>Rincian Kendala & Lokasi Site</th>
-                        <th style="width: 160px;">Kategori Gangguan</th>
-                        <th style="width: 140px;">Waktu Lapor</th>
+                        <th style="width: 150px;">Kategori Gangguan</th>
+                        <th style="width: 130px;">Waktu Lapor</th>
                         <th style="width: 140px;">Teknisi NOC</th>
-                        <th style="width: 120px;">Status</th>
-                        <th style="width: 90px;" class="text-center">Aksi</th>
+                        <th style="width: 110px;">Status</th>
+                        <th style="width: 100px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($tickets as $t): ?>
+                    <?php foreach ($tickets as $t): 
+                        $clean_tech_name = preg_replace('/\s*\(.*?\)/', '', $t['technician_name'] ?? '');
+                    ?>
                         <tr>
                             <td>
-                                <span class="fw-bold text-primary font-monospace"><?= htmlspecialchars($t['ticket_code']) ?></span>
+                                <span class="fw-bold text-primary font-monospace text-nowrap"><?= htmlspecialchars($t['ticket_code']) ?></span>
                             </td>
                             <td>
                                 <span class="circuit-badge"><?= htmlspecialchars($t['circuit_id']) ?></span>
-                                <div class="small text-secondary mt-1"><?= htmlspecialchars($t['service_type']) ?></div>
+                                <div class="small text-secondary mt-1 text-truncate" style="max-width: 140px;" title="<?= htmlspecialchars($t['service_type']) ?>"><?= htmlspecialchars($t['service_type']) ?></div>
                             </td>
                             <td>
-                                <div class="fw-semibold text-dark"><?= htmlspecialchars($t['title']) ?></div>
-                                <div class="small text-secondary mt-1">
+                                <div class="fw-semibold text-dark text-truncate" style="max-width: 260px;" title="<?= htmlspecialchars($t['title']) ?>"><?= htmlspecialchars($t['title']) ?></div>
+                                <div class="small text-secondary mt-1 text-truncate" style="max-width: 260px;" title="<?= htmlspecialchars($t['location']) ?>">
                                     <span><i class="fas fa-map-marker-alt text-danger me-1"></i><?= htmlspecialchars($t['location']) ?></span>
                                 </div>
                             </td>
@@ -241,13 +243,13 @@ include __DIR__ . '/../includes/header.php';
                                 </span>
                             </td>
                             <td>
-                                <div class="small fw-medium text-dark"><?= date('d M Y', strtotime($t['created_at'])) ?></div>
-                                <div class="small text-secondary"><?= date('H:i', strtotime($t['created_at'])) ?> WIB</div>
+                                <div class="small fw-medium text-dark text-nowrap"><?= date('d M Y', strtotime($t['created_at'])) ?></div>
+                                <div class="small text-secondary text-nowrap"><?= date('H:i', strtotime($t['created_at'])) ?> WIB</div>
                             </td>
                             <td>
                                 <?php if ($t['technician_name']): ?>
-                                    <div class="small fw-semibold text-dark">
-                                        <i class="fas fa-user-cog text-primary me-1"></i> <?= htmlspecialchars($t['technician_name']) ?>
+                                    <div class="small fw-semibold text-dark text-truncate" style="max-width: 130px;" title="<?= htmlspecialchars($t['technician_name']) ?>">
+                                        <i class="fas fa-user-cog text-primary me-1"></i> <?= htmlspecialchars($clean_tech_name) ?>
                                     </div>
                                 <?php else: ?>
                                     <span class="badge bg-light text-muted border">Menunggu NOC</span>
@@ -257,12 +259,12 @@ include __DIR__ . '/../includes/header.php';
                                 <?= get_status_badge($t['status']) ?>
                             </td>
                             <td class="text-center">
-                                <div class="btn-group btn-group-sm">
-                                    <a href="<?= base_url('customer/detail_tiket.php?id=' . $t['id']) ?>" class="btn btn-outline-secondary" title="Lihat Detail & Tracking Timeline">
-                                        <i class="fas fa-eye me-1 text-secondary"></i> Detail
+                                <div class="d-inline-flex gap-1 justify-content-center">
+                                    <a href="<?= base_url('customer/detail_tiket.php?id=' . $t['id']) ?>" class="btn btn-sm btn-outline-secondary px-2 py-1" title="Lihat Detail & Tracking Timeline" style="font-size: 0.78rem;">
+                                        <i class="fas fa-eye me-1"></i> Detail
                                     </a>
                                     <a href="<?= base_url('customer/riwayat_tiket.php?action=delete&id=' . $t['id']) ?>" 
-                                       class="btn btn-outline-danger" 
+                                       class="btn btn-sm btn-outline-danger px-2 py-1" 
                                        title="Hapus Tiket" 
                                        onclick="return confirm('Apakah Anda yakin ingin menghapus tiket #<?= htmlspecialchars($t['ticket_code']) ?>?')">
                                         <i class="fas fa-trash-alt"></i>

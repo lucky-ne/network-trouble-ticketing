@@ -26,6 +26,32 @@ try {
     $sla_modal_priorities = [];
 }
 
+// PROSES GLOBAL: Simpan / Update Pengaturan Broadcast Gangguan Massal oleh Admin / Helpdesk
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_save_broadcast']) && in_array($current_role, ['admin', 'helpdesk'])) {
+    $is_active = isset($_POST['outage_broadcast_active']) ? '1' : '0';
+    $title     = trim($_POST['outage_broadcast_title'] ?? '');
+    $message   = trim($_POST['outage_broadcast_message'] ?? '');
+    $area      = trim($_POST['outage_broadcast_area'] ?? '');
+    $eta       = trim($_POST['outage_broadcast_eta'] ?? '');
+    $level     = trim($_POST['outage_broadcast_level'] ?? 'danger');
+
+    update_setting('outage_broadcast_active', $is_active);
+    update_setting('outage_broadcast_title', $title);
+    update_setting('outage_broadcast_message', $message);
+    update_setting('outage_broadcast_area', $area);
+    update_setting('outage_broadcast_eta', $eta);
+    update_setting('outage_broadcast_level', $level);
+
+    if ($is_active === '1') {
+        set_flash('danger', '<strong>Broadcast Gangguan Massal DIAKTIFKAN!</strong> Banner peringatan darurat kini tampil di seluruh portal klien & internal.');
+    } else {
+        set_flash('success', '<strong>Broadcast Gangguan Massal DINONAKTIFKAN!</strong> Status operasional kembali normal.');
+    }
+    $redirect_url = strtok($_SERVER['REQUEST_URI'], '#');
+    header('Location: ' . $redirect_url);
+    exit;
+}
+
 // Helper nama role
 $role_names = [
     'admin'    => 'Administrator Master',
@@ -192,7 +218,14 @@ if ($current_user && !empty($current_user['name'])) {
 
                     <?php elseif ($current_role === 'teknisi'): ?>
                         <li class="nav-item">
-                            <a class="nav-link <?= (strpos($_SERVER['PHP_SELF'], 'dashboard.php') !== false || strpos($_SERVER['PHP_SELF'], 'proses_tiket.php') !== false) ? 'active' : '' ?>" href="<?= base_url('teknisi/dashboard.php') ?>">Dashboard Tugas Lapangan</a>
+                            <a class="nav-link <?= (strpos($_SERVER['PHP_SELF'], 'dashboard.php') !== false || strpos($_SERVER['PHP_SELF'], 'proses_tiket.php') !== false) ? 'active' : '' ?>" href="<?= base_url('teknisi/dashboard.php') ?>">
+                                <i class="fas fa-wrench me-1"></i> Tugas Aktif (Belum Selesai)
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link <?= strpos($_SERVER['PHP_SELF'], 'riwayat_tugas.php') !== false ? 'active' : '' ?>" href="<?= base_url('teknisi/riwayat_tugas.php') ?>">
+                                <i class="fas fa-check-double me-1"></i> Riwayat Tugas Selesai
+                            </a>
                         </li>
 
                     <?php elseif ($current_role === 'manager'): ?>
@@ -359,6 +392,75 @@ if ($current_user && !empty($current_user['name'])) {
         </div>
     </div>
 </div>
+
+<?php if ($current_role === 'helpdesk' || $current_role === 'admin'): ?>
+<!-- Modal Global: Manajemen Broadcast Gangguan Massal (Outage Alert) -->
+<div class="modal fade no-print" id="modalBroadcastOutage" tabindex="-1" aria-labelledby="modalBroadcastOutageLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header py-3 bg-white" style="border-bottom: 1px solid #e4e4e7;">
+                <h6 class="modal-title mb-0 fw-bold text-dark" id="modalBroadcastOutageLabel">
+                    <span class="badge bg-danger me-2"><i class="fas fa-tower-broadcast me-1"></i> NOC BROADCAST</span>
+                    Pengumuman Gangguan Massal (Outage Announcement)
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="">
+                <div class="modal-body p-4">
+                    <div class="alert alert-warning small mb-3">
+                        <i class="fas fa-info-circle me-1"></i> Saat diaktifkan, banner peringatan darurat akan otomatis tayang di bagian atas portal <strong>seluruh Klien Korporat B2B</strong> dan portal internal.
+                    </div>
+
+                    <div class="p-3 mb-3 rounded border" style="background:#fef2f2; border-color:#fecaca !important;">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="outage_broadcast_active_hdr" name="outage_broadcast_active" value="1" <?= (get_setting('outage_broadcast_active', 0) == 1) ? 'checked' : '' ?>>
+                            <label class="form-check-label fw-bold text-danger" for="outage_broadcast_active_hdr" style="font-size:0.95rem;">
+                                Aktifkan Banner Pengumuman Gangguan Massal ke Seluruh Klien
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-dark">Judul Insiden Gangguan Massal <span class="text-danger">*</span></label>
+                        <input type="text" name="outage_broadcast_title" class="form-control" value="<?= htmlspecialchars(get_setting('outage_broadcast_title', 'Pemberitahuan: Gangguan Massal Kabel Fiber Optic Backbone')) ?>" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-dark">Deskripsi Insiden & Penjelasan Teknis <span class="text-danger">*</span></label>
+                        <textarea name="outage_broadcast_message" class="form-control" rows="3" required><?= htmlspecialchars(get_setting('outage_broadcast_message', 'Terjadi putus kabel Fiber Optic Backbone akibat pekerjaan galian utilitas kota pihak ketiga. Tim Fiber Optic Splicer sedang melakukan perbaikan darurat di lokasi.')) ?></textarea>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Wilayah / Area Site Terdampak</label>
+                            <input type="text" name="outage_broadcast_area" class="form-control" value="<?= htmlspecialchars(get_setting('outage_broadcast_area', 'Sudirman, MH Thamrin, Kuningan & Sekitarnya')) ?>" placeholder="Contoh: Kawasan Sudirman - Thamrin">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-dark">Estimasi Waktu Normalisasi (ETA)</label>
+                            <input type="text" name="outage_broadcast_eta" class="form-control" value="<?= htmlspecialchars(get_setting('outage_broadcast_eta', '4 Jam (Estimasi Normal: 16:30 WIB)')) ?>" placeholder="Contoh: 4 Jam (ETA: 16:30 WIB)">
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold text-dark">Tingkat Urgensi Peringatan</label>
+                        <select name="outage_broadcast_level" class="form-select">
+                            <option value="danger" <?= (get_setting('outage_broadcast_level', 'danger') === 'danger') ? 'selected' : '' ?>>Bahaya / Critical Outage (Merah)</option>
+                            <option value="warning" <?= (get_setting('outage_broadcast_level', 'danger') === 'warning') ? 'selected' : '' ?>>Peringatan / Degradasi Ringan (Kuning)</option>
+                            <option value="info" <?= (get_setting('outage_broadcast_level', 'danger') === 'info') ? 'selected' : '' ?>>Informasi / Scheduled Maintenance (Biru)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
+                    <button type="submit" name="action_save_broadcast" class="btn btn-danger btn-sm fw-semibold">
+                        <i class="fas fa-save me-1"></i> Simpan Pengaturan Broadcast
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 <?php endif; ?>
 
 <!-- Container Utama Halaman -->
@@ -366,4 +468,53 @@ if ($current_user && !empty($current_user['name'])) {
     <div class="container">
         <!-- Notifikasi Flash Message -->
         <?php display_flash(); ?>
+
+        <?php
+        $outage_alert = get_active_outage_broadcast();
+        if ($outage_alert && $current_user):
+            $alert_level = in_array($outage_alert['level'], ['danger', 'warning', 'info']) ? $outage_alert['level'] : 'danger';
+            $bg_color = $alert_level === 'danger' ? '#fef2f2' : ($alert_level === 'warning' ? '#fffbeb' : '#eff6ff');
+            $border_color = $alert_level === 'danger' ? '#f87171' : ($alert_level === 'warning' ? '#fcd34d' : '#93c5fd');
+            $text_color = $alert_level === 'danger' ? '#991b1b' : ($alert_level === 'warning' ? '#92400e' : '#1e40af');
+            $icon = $alert_level === 'danger' ? 'fa-exclamation-triangle' : ($alert_level === 'warning' ? 'fa-bullhorn' : 'fa-info-circle');
+        ?>
+        <!-- BROADCAST GANGGUAN MASSAL (OUTAGE ANNOUNCEMENT BANNER) -->
+        <div class="card mb-4 border shadow-sm" style="background: <?= $bg_color ?>; border-color: <?= $border_color ?> !important; border-radius: 0.5rem;">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(0,0,0,0.06); width: 42px; height: 42px;">
+                        <i class="fas <?= $icon ?> fa-lg" style="color: <?= $text_color ?>;"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-1">
+                            <div class="fw-bold" style="color: <?= $text_color ?>; font-size: 0.95rem;">
+                                <span class="badge bg-danger me-2"><i class="fas fa-broadcast-tower me-1"></i> GANGGUAN MASSAL AKTIF</span>
+                                <?= htmlspecialchars($outage_alert['title']) ?>
+                            </div>
+                            <?php if (!empty($outage_alert['eta'])): ?>
+                                <span class="badge rounded-pill font-monospace" style="background: <?= $text_color ?>; color: #fff; font-size: 0.75rem;">
+                                    <i class="fas fa-stopwatch me-1"></i> <?= htmlspecialchars($outage_alert['eta']) ?>
+                                </span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="small mb-2" style="color: <?= $text_color ?>; opacity: 0.95; line-height: 1.5;">
+                            <?= nl2br(htmlspecialchars($outage_alert['message'])) ?>
+                        </div>
+                        <div class="d-flex flex-wrap align-items-center gap-3 font-monospace small" style="font-size: 0.75rem; color: <?= $text_color ?>; opacity: 0.9;">
+                            <?php if (!empty($outage_alert['area'])): ?>
+                                <span><i class="fas fa-map-marker-alt me-1"></i> <strong>Area:</strong> <?= htmlspecialchars($outage_alert['area']) ?></span>
+                            <?php endif; ?>
+                            <span><i class="fas fa-shield-alt me-1"></i> <strong>Status SLA:</strong> Dikecualikan dari Penalti SLA (Force Majeure)</span>
+                            <?php if ($current_role === 'helpdesk' || $current_role === 'admin'): ?>
+                                <button type="button" class="btn btn-sm btn-dark py-0 px-2 ms-auto text-white" data-bs-toggle="modal" data-bs-target="#modalBroadcastOutage" style="font-size: 0.7rem; border-radius: 4px;">
+                                    <i class="fas fa-sliders-h me-1"></i> Kelola Broadcast
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
 

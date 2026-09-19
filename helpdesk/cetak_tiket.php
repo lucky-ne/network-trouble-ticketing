@@ -422,6 +422,11 @@ $page_title = 'Berita Acara #' . $ticket['ticket_code'];
                     <span class="text-success"><i class="fas fa-check-circle"></i> On-Time SLA (Tepat Waktu)</span>
                 <?php elseif ($ticket['sla_status'] === 'breached'): ?>
                     <span class="text-danger"><i class="fas fa-times-circle"></i> Breached SLA (Melewati Batas)</span>
+                <?php elseif ($ticket['sla_status'] === 'exempted'): ?>
+                    <span class="text-info"><i class="fas fa-shield-alt"></i> SLA Exempted (Force Majeure)</span>
+                    <?php if (!empty($ticket['sla_exemption_reason'])): ?>
+                        <div class="small text-muted fw-normal mt-1"><i class="fas fa-info-circle"></i> Alasan: <?= htmlspecialchars($ticket['sla_exemption_reason']) ?></div>
+                    <?php endif; ?>
                 <?php else: ?>
                     <span class="text-muted">Dalam Pengerjaan</span>
                 <?php endif; ?>
@@ -429,9 +434,19 @@ $page_title = 'Berita Acara #' . $ticket['ticket_code'];
         </tr>
         <tr>
             <th>Durasi Penanganan</th>
-            <td><?= ($ticket['resolution_time_minutes'] > 0) ? format_duration_minutes($ticket['resolution_time_minutes']) : '-' ?></td>
+            <td>
+                <?= ($ticket['resolution_time_minutes'] > 0) ? format_duration_minutes($ticket['resolution_time_minutes']) : '-' ?>
+                <?php if (!empty($ticket['sla_paused_total_minutes']) && $ticket['sla_paused_total_minutes'] > 0): ?>
+                    <span class="badge bg-secondary ms-1">Jeda SLA: <?= $ticket['sla_paused_total_minutes'] ?>m</span>
+                <?php endif; ?>
+            </td>
             <th>Status Akhir Tiket</th>
-            <td class="fw-bold text-uppercase"><?= htmlspecialchars($ticket['status']) ?></td>
+            <td class="fw-bold text-uppercase">
+                <?= htmlspecialchars($ticket['status']) ?>
+                <?php if (!empty($ticket['is_outage_massal'])): ?>
+                    <span class="badge bg-danger ms-1"><i class="fas fa-broadcast-tower"></i> Gangguan Massal</span>
+                <?php endif; ?>
+            </td>
         </tr>
     </table>
 

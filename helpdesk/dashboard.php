@@ -10,7 +10,7 @@ check_auth(['helpdesk']);
 $pdo = get_db();
 
 // Ambil Daftar Field Engineer & Prioritas untuk Modal Penugasan
-$technicians = $pdo->query("SELECT id, name, department, phone FROM users WHERE role = 'teknisi' ORDER BY name ASC")->fetchAll();
+$technicians = $pdo->query("SELECT id, nip, name, department, phone FROM users WHERE role = 'teknisi' ORDER BY name ASC")->fetchAll();
 $priorities = $pdo->query("SELECT * FROM priorities ORDER BY sla_hours ASC")->fetchAll();
 
 // PROSES: Disposisi Field Engineer & Update Prioritas SLA
@@ -92,6 +92,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_assign'])) {
     }
 }
 
+// PROSES: Simpan / Update Pengaturan Broadcast Gangguan Massal
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_save_broadcast'])) {
+    $is_active = isset($_POST['outage_broadcast_active']) ? '1' : '0';
+    $title     = trim($_POST['outage_broadcast_title'] ?? '');
+    $message   = trim($_POST['outage_broadcast_message'] ?? '');
+    $area      = trim($_POST['outage_broadcast_area'] ?? '');
+    $eta       = trim($_POST['outage_broadcast_eta'] ?? '');
+    $level     = trim($_POST['outage_broadcast_level'] ?? 'danger');
+
+    update_setting('outage_broadcast_active', $is_active);
+    update_setting('outage_broadcast_title', $title);
+    update_setting('outage_broadcast_message', $message);
+    update_setting('outage_broadcast_area', $area);
+    update_setting('outage_broadcast_eta', $eta);
+    update_setting('outage_broadcast_level', $level);
+
+    if ($is_active === '1') {
+        set_flash('danger', '<strong>Broadcast Gangguan Massal DIAKTIFKAN!</strong> Banner peringatan darurat kini tampil di seluruh portal klien & internal.');
+    } else {
+        set_flash('success', '<strong>Broadcast Gangguan Massal DINONAKTIFKAN!</strong> Status operasional kembali normal.');
+    }
+    header('Location: ' . base_url('helpdesk/dashboard.php'));
+    exit;
+}
+
 // Statistik Keseluruhan B2B
 $stats_query = $pdo->query("SELECT 
     COUNT(*) AS total_tickets,
@@ -99,20 +124,19 @@ $stats_query = $pdo->query("SELECT
     SUM(CASE WHEN status = 'assigned' THEN 1 ELSE 0 END) AS assigned_tickets,
     SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) AS progress_tickets,
     SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) AS resolved_tickets,
-    SUM(CASE WHEN status = 'closed' THEN 1 ELSE 0 END) AS closed_tickets,
-    SUM(CASE WHEN sla_status = 'breached' THEN 1 ELSE 0 END) AS breached_tickets
+    SUM(CASE WHEN status = 'closed' THEN 1 ELSE 0 END) AS closed_tickets
 FROM tickets");
 $stats = $stats_query->fetch();
 
-// Antrian Tiket Aktif Sirkit B2B
+// Ambil Antrian Tiket Gangguan Sirkit B2B Aktif
 $urgent_tickets = $pdo->query("SELECT 
     t.*, 
+    cl.company_name, 
+    cl.company_code, 
     c.name AS category_name, 
     p.name AS priority_name, 
-    p.badge_color AS priority_color, 
+    p.badge_color AS priority_color,
     p.sla_hours,
-    cl.company_name,
-    cl.company_code,
     u_tek.name AS technician_name
 FROM tickets t
 JOIN categories c ON t.category_id = c.id
@@ -130,14 +154,20 @@ include __DIR__ . '/../includes/header.php';
 ?>
 
 <!-- Page Header -->
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
     <div>
         <h4 class="fw-bold text-dark mb-1">
             <i class="fas fa-headset text-primary me-2"></i>NOC & Service Desk B2B Dashboard
         </h4>
         <p class="text-secondary small mb-0">Pusat monitoring gangguan sirkit klien korporat & penugasan Field Engineer PT. Visimedia Pratama Persada.</p>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex flex-wrap gap-2">
+        <button type="button" class="btn <?= (get_setting('outage_broadcast_active', 0) == 1) ? 'btn-danger' : 'btn-outline-danger' ?> btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalBroadcastOutage" id="broadcastPanel">
+            <i class="fas fa-tower-broadcast me-1"></i> Broadcast Gangguan Massal
+            <?php if (get_setting('outage_broadcast_active', 0) == 1): ?>
+                <span class="badge bg-white text-danger ms-1">AKTIF</span>
+            <?php endif; ?>
+        </button>
         <a href="<?= base_url('helpdesk/kelola_tiket.php') ?>" class="btn btn-primary btn-sm fw-semibold">
             <i class="fas fa-tasks me-1"></i> Semua Antrian Tiket
         </a>
@@ -187,15 +217,15 @@ include __DIR__ . '/../includes/header.php';
             <table class="table table-b2b table-hover align-middle datatable w-100">
                 <thead>
                     <tr>
-                        <th>No. Tiket</th>
-                        <th>Perusahaan Klien</th>
-                        <th>Sirkit (CID) & Layanan</th>
+                        <th style="width: 140px;">No. Tiket</th>
+                        <th style="width: 160px;">Perusahaan Klien</th>
+                        <th style="width: 150px;">Sirkit (CID) & Layanan</th>
                         <th>Kendala Jaringan</th>
-                        <th>Prioritas SLA</th>
-                        <th>Status</th>
-                        <th>Sisa Waktu SLA</th>
-                        <th>Field Engineer</th>
-                        <th class="text-center">Aksi Disposisi</th>
+                        <th style="width: 130px;">Prioritas SLA</th>
+                        <th style="width: 110px;">Status</th>
+                        <th style="width: 140px;">Sisa Waktu SLA</th>
+                        <th style="width: 140px;">Field Engineer</th>
+                        <th style="width: 120px;" class="text-center">Aksi Disposisi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -207,28 +237,32 @@ include __DIR__ . '/../includes/header.php';
                             </td>
                         </tr>
                     <?php else: ?>
-                        <?php foreach ($urgent_tickets as $t): ?>
+                        <?php foreach ($urgent_tickets as $t): 
+                            $clean_tech_name = preg_replace('/\s*\(.*?\)/', '', $t['technician_name'] ?? '');
+                        ?>
                             <tr>
-                                <td class="fw-bold text-primary">
-                                    <a href="<?= base_url('customer/detail_tiket.php?id=' . $t['id']) ?>" class="text-decoration-none">
+                                <td>
+                                    <a href="<?= base_url('customer/detail_tiket.php?id=' . $t['id']) ?>" class="fw-bold text-primary font-monospace text-nowrap text-decoration-none">
                                         <?= htmlspecialchars($t['ticket_code']) ?>
                                     </a>
                                 </td>
                                 <td>
-                                    <div class="fw-semibold text-dark"><?= htmlspecialchars($t['company_name']) ?></div>
-                                    <small class="text-muted"><?= htmlspecialchars($t['company_code']) ?></small>
+                                    <div class="fw-semibold text-dark text-truncate" style="max-width: 150px;" title="<?= htmlspecialchars($t['company_name']) ?>"><?= htmlspecialchars($t['company_name']) ?></div>
+                                    <small class="text-secondary"><?= htmlspecialchars($t['company_code']) ?></small>
                                 </td>
                                 <td>
                                     <span class="circuit-badge"><?= htmlspecialchars($t['circuit_id']) ?></span>
-                                    <div class="small text-muted mt-1"><?= htmlspecialchars($t['service_type']) ?></div>
+                                    <div class="small text-secondary mt-1 text-truncate" style="max-width: 140px;" title="<?= htmlspecialchars($t['service_type']) ?>"><?= htmlspecialchars($t['service_type']) ?></div>
                                 </td>
                                 <td>
-                                    <div class="fw-semibold text-dark"><?= htmlspecialchars($t['title']) ?></div>
-                                    <small class="text-muted"><i class="fas fa-map-marker-alt me-1 text-danger"></i> <?= htmlspecialchars($t['location']) ?></small>
+                                    <div class="fw-semibold text-dark text-truncate" style="max-width: 230px;" title="<?= htmlspecialchars($t['title']) ?>"><?= htmlspecialchars($t['title']) ?></div>
+                                    <small class="text-secondary text-truncate d-block" style="max-width: 230px;" title="<?= htmlspecialchars($t['location']) ?>">
+                                        <i class="fas fa-map-marker-alt me-1 text-danger"></i> <?= htmlspecialchars($t['location']) ?>
+                                    </small>
                                 </td>
                                 <td>
                                     <span class="badge bg-<?= htmlspecialchars($t['priority_color']) ?>">
-                                        <?= htmlspecialchars($t['priority_name']) ?> (<?= $t['sla_hours'] ?> Jam)
+                                        <?= htmlspecialchars($t['priority_name']) ?> (<?= $t['sla_hours'] ?>j)
                                     </span>
                                 </td>
                                 <td>
@@ -239,38 +273,40 @@ include __DIR__ . '/../includes/header.php';
                                 </td>
                                 <td>
                                     <?php if ($t['technician_name']): ?>
-                                        <span class="small fw-semibold text-dark"><i class="fas fa-user-cog text-primary me-1"></i> <?= htmlspecialchars($t['technician_name']) ?></span>
+                                        <div class="small fw-semibold text-dark text-truncate" style="max-width: 130px;" title="<?= htmlspecialchars($t['technician_name']) ?>">
+                                            <i class="fas fa-user-cog text-primary me-1"></i> <?= htmlspecialchars($clean_tech_name) ?>
+                                        </div>
                                     <?php else: ?>
                                         <span class="badge bg-danger text-white">Belum Ditugaskan</span>
                                     <?php endif; ?>
                                 </td>
                                 <td class="text-center">
-                                    <div class="btn-group btn-group-sm">
+                                    <div class="d-inline-flex gap-1 justify-content-center">
                                         <?php if ($t['status'] === 'closed'): ?>
-                                            <a href="<?= base_url('customer/detail_tiket.php?id=' . $t['id']) ?>" class="btn btn-outline-primary" title="Lihat Detail & Tracking">
-                                                <i class="fas fa-eye me-1"></i> Detail
+                                            <a href="<?= base_url('customer/detail_tiket.php?id=' . $t['id']) ?>" class="btn btn-sm btn-outline-primary px-2 py-1" title="Lihat Detail & Tracking">
+                                                <i class="fas fa-eye"></i>
                                             </a>
-                                            <a href="<?= base_url('helpdesk/cetak_tiket.php?id=' . $t['id']) ?>" target="_blank" class="btn btn-outline-success" title="Cetak Berita Acara">
+                                            <a href="<?= base_url('helpdesk/cetak_tiket.php?id=' . $t['id']) ?>" target="_blank" class="btn btn-sm btn-outline-success px-2 py-1" title="Cetak Berita Acara">
                                                 <i class="fas fa-print"></i>
                                             </a>
                                         <?php elseif ($t['status'] === 'open' || empty($t['technician_name'])): ?>
-                                            <button type="button" class="btn btn-primary fw-semibold" 
+                                            <button type="button" class="btn btn-sm btn-primary fw-semibold px-2 py-1" 
                                                     data-bs-toggle="modal" 
                                                     data-bs-target="#assignModal<?= $t['id'] ?>"
-                                                    title="Tugaskan ke Field Engineer">
+                                                    title="Tugaskan ke Field Engineer" style="font-size: 0.78rem;">
                                                 <i class="fas fa-user-plus me-1"></i> Tugaskan
                                             </button>
-                                            <a href="<?= base_url('customer/detail_tiket.php?id=' . $t['id']) ?>" class="btn btn-outline-secondary" title="Detail">
+                                            <a href="<?= base_url('customer/detail_tiket.php?id=' . $t['id']) ?>" class="btn btn-sm btn-outline-secondary px-2 py-1" title="Detail">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         <?php else: ?>
-                                            <button type="button" class="btn btn-outline-primary" 
+                                            <button type="button" class="btn btn-sm btn-outline-primary px-2 py-1" 
                                                     data-bs-toggle="modal" 
                                                     data-bs-target="#assignModal<?= $t['id'] ?>"
-                                                    title="Ubah Disposisi Field Engineer">
-                                                <i class="fas fa-user-cog me-1"></i> Atur Disposisi
+                                                    title="Ubah Disposisi Field Engineer" style="font-size: 0.78rem;">
+                                                <i class="fas fa-user-cog me-1"></i> Disposisi
                                             </button>
-                                            <a href="<?= base_url('customer/detail_tiket.php?id=' . $t['id']) ?>" class="btn btn-outline-secondary" title="Detail">
+                                            <a href="<?= base_url('customer/detail_tiket.php?id=' . $t['id']) ?>" class="btn btn-sm btn-outline-secondary px-2 py-1" title="Detail">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         <?php endif; ?>
@@ -304,7 +340,7 @@ include __DIR__ . '/../includes/header.php';
                                                                 <option value="">-- Pilih Field Engineer --</option>
                                                                 <?php foreach ($technicians as $tek): ?>
                                                                     <option value="<?= $tek['id'] ?>" <?= ($t['technician_id'] == $tek['id']) ? 'selected' : '' ?>>
-                                                                        <?= htmlspecialchars($tek['name']) ?> (<?= htmlspecialchars($tek['department']) ?>)
+                                                                        <?= htmlspecialchars($tek['name']) ?> (<?= htmlspecialchars($tek['nip']) ?>)
                                                                     </option>
                                                                 <?php endforeach; ?>
                                                             </select>

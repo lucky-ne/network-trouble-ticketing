@@ -143,7 +143,7 @@ $stmt_t->execute($params);
 $tickets = $stmt_t->fetchAll();
 
 $clients = $pdo->query("SELECT * FROM clients ORDER BY company_name ASC")->fetchAll();
-$technicians = $pdo->query("SELECT id, name FROM users WHERE role = 'teknisi' ORDER BY name ASC")->fetchAll();
+$technicians = $pdo->query("SELECT id, nip, name FROM users WHERE role = 'teknisi' ORDER BY name ASC")->fetchAll();
 $priorities = $pdo->query("SELECT * FROM priorities ORDER BY sla_hours ASC")->fetchAll();
 
 require_once __DIR__ . '/../includes/header.php';
@@ -215,17 +215,17 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-b2b table-hover align-middle datatable w-100">
+            <table class="table table-b2b table-hover align-middle datatable w-100 mb-0">
                 <thead>
                     <tr>
-                        <th>No. Tiket</th>
-                        <th>Klien & Sirkit (CID)</th>
-                        <th>Kendala & Lokasi</th>
-                        <th>Prioritas SLA</th>
-                        <th>Status</th>
-                        <th>Kepatuhan SLA</th>
-                        <th>Teknisi</th>
-                        <th class="text-center">Aksi</th>
+                        <th style="width: 120px;">No. Tiket</th>
+                        <th style="width: 165px;">Klien &amp; Sirkit</th>
+                        <th style="min-width: 200px;">Kendala &amp; Lokasi</th>
+                        <th style="width: 110px;">Prioritas SLA</th>
+                        <th style="width: 95px;">Status</th>
+                        <th style="width: 140px;">Kepatuhan SLA</th>
+                        <th style="width: 130px;">Field Engineer</th>
+                        <th style="width: 125px;" class="text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -235,14 +235,23 @@ require_once __DIR__ . '/../includes/header.php';
                                 <a href="<?= base_url('customer/detail_tiket.php?id=' . $t['id']) ?>" class="text-decoration-none">
                                     <?= htmlspecialchars($t['ticket_code']) ?>
                                 </a>
+                                <?php if (!empty($t['is_outage_massal'])): ?>
+                                    <span class="badge bg-danger ms-1" title="Terkait Gangguan Massal"><i class="fas fa-tower-broadcast"></i></span>
+                                <?php endif; ?>
                             </td>
                             <td>
-                                <div class="fw-semibold text-dark"><?= htmlspecialchars($t['company_name']) ?></div>
-                                <span class="circuit-badge"><?= htmlspecialchars($t['circuit_id']) ?></span>
+                                <div class="fw-semibold text-dark text-truncate" style="max-width: 160px;" title="<?= htmlspecialchars($t['company_name']) ?>">
+                                    <?= htmlspecialchars($t['company_name']) ?>
+                                </div>
+                                <span class="circuit-badge mt-1"><?= htmlspecialchars($t['circuit_id']) ?></span>
                             </td>
                             <td>
-                                <div class="small fw-semibold"><?= htmlspecialchars($t['title']) ?></div>
-                                <small class="text-muted"><?= htmlspecialchars($t['location']) ?></small>
+                                <div class="small fw-semibold text-dark text-truncate" style="max-width: 230px;" title="<?= htmlspecialchars($t['title']) ?>">
+                                    <?= htmlspecialchars($t['title']) ?>
+                                </div>
+                                <small class="text-muted text-truncate d-block mt-1" style="max-width: 230px; font-size: 0.75rem;" title="<?= htmlspecialchars($t['location']) ?>">
+                                    <i class="fas fa-map-marker-alt text-secondary me-1"></i><?= htmlspecialchars($t['location']) ?>
+                                </small>
                             </td>
                             <td>
                                 <span class="badge bg-<?= htmlspecialchars($t['priority_badge']) ?>">
@@ -250,36 +259,38 @@ require_once __DIR__ . '/../includes/header.php';
                                 </span>
                             </td>
                             <td><?= get_status_badge($t['status']) ?></td>
-                            <td><?= get_sla_badge($t['sla_status'], $t['sla_deadline'], $t['resolved_at']) ?></td>
+                            <td><?= get_sla_badge($t['sla_status'], $t['sla_deadline'], $t['resolved_at'], $t['sla_exemption_reason'] ?? null) ?></td>
                             <td>
                                 <?php if ($t['technician_name']): ?>
-                                    <span class="small fw-semibold text-dark"><i class="fas fa-user-cog text-primary me-1"></i> <?= htmlspecialchars($t['technician_name']) ?></span>
+                                    <div class="small fw-semibold text-dark text-truncate" style="max-width: 125px;" title="<?= htmlspecialchars($t['technician_name']) ?>">
+                                        <i class="fas fa-user-gear text-primary me-1"></i><?= htmlspecialchars(trim(preg_replace('/\(.*?\)/', '', $t['technician_name']))) ?>
+                                    </div>
                                 <?php else: ?>
-                                    <span class="badge bg-danger text-white">Unassigned</span>
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Unassigned</span>
                                 <?php endif; ?>
                             </td>
                             <td class="text-center">
-                                <div class="btn-group btn-group-sm">
+                                <div class="d-inline-flex gap-1 justify-content-center">
                                     <?php if ($t['status'] !== 'closed'): ?>
-                                        <button type="button" class="btn btn-outline-warning text-dark" 
+                                        <button type="button" class="btn btn-sm btn-outline-warning text-dark px-2 py-1" 
                                                 data-bs-toggle="modal" 
                                                 data-bs-target="#editModal<?= $t['id'] ?>"
                                                 title="Edit Penugasan / Status">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                     <?php endif; ?>
-                                    <a href="<?= base_url('customer/detail_tiket.php?id=' . $t['id']) ?>" class="btn btn-outline-primary" title="Detail">
+                                    <a href="<?= base_url('customer/detail_tiket.php?id=' . $t['id']) ?>" class="btn btn-sm btn-outline-primary px-2 py-1" title="Detail">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="<?= base_url('helpdesk/cetak_tiket.php?id=' . $t['id']) ?>" target="_blank" class="btn btn-outline-success" title="Cetak Berita Acara (PDF)">
+                                    <a href="<?= base_url('helpdesk/cetak_tiket.php?id=' . $t['id']) ?>" target="_blank" class="btn btn-sm btn-outline-success px-2 py-1" title="Cetak Berita Acara (PDF)">
                                         <i class="fas fa-print"></i>
                                     </a>
                                     <?php if ($t['status'] === 'resolved'): ?>
-                                        <a href="<?= base_url('admin/semua_tiket.php?close_id=' . $t['id']) ?>" class="btn btn-outline-dark" onclick="return confirm('Tutup tiket #<?= htmlspecialchars($t['ticket_code']) ?> secara resmi?');" title="Kunci & Tutup Tiket">
+                                        <a href="<?= base_url('admin/semua_tiket.php?close_id=' . $t['id']) ?>" class="btn btn-sm btn-outline-dark px-2 py-1" onclick="return confirm('Tutup tiket #<?= htmlspecialchars($t['ticket_code']) ?> secara resmi?');" title="Kunci & Tutup Tiket">
                                             <i class="fas fa-lock"></i>
                                         </a>
                                     <?php endif; ?>
-                                    <a href="<?= base_url('admin/semua_tiket.php?del_id=' . $t['id']) ?>" class="btn btn-outline-danger" onclick="return confirm('Hapus permanen tiket #<?= htmlspecialchars($t['ticket_code']) ?>?');" title="Hapus">
+                                    <a href="<?= base_url('admin/semua_tiket.php?del_id=' . $t['id']) ?>" class="btn btn-sm btn-outline-danger px-2 py-1" onclick="return confirm('Hapus permanen tiket #<?= htmlspecialchars($t['ticket_code']) ?>?');" title="Hapus">
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 </div>
@@ -311,7 +322,7 @@ require_once __DIR__ . '/../includes/header.php';
                                                             <option value="">-- Belum Ditugaskan --</option>
                                                             <?php foreach ($technicians as $tek): ?>
                                                                 <option value="<?= $tek['id'] ?>" <?= ($t['technician_id'] == $tek['id']) ? 'selected' : '' ?>>
-                                                                    <?= htmlspecialchars($tek['name']) ?>
+                                                                    <?= htmlspecialchars($tek['name']) ?> (<?= htmlspecialchars($tek['nip']) ?>)
                                                                 </option>
                                                             <?php endforeach; ?>
                                                         </select>

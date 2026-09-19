@@ -33,6 +33,31 @@ function get_db() {
                 PDO::ATTR_EMULATE_PREPARES   => false,
             ];
             $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+            
+            // Auto-Migration Runtime Checker: Menjamin kolom SLA Exemption & Outage Broadcast selalu tersedia
+            static $migrated = false;
+            if (!$migrated) {
+                try {
+                    $cols = $pdo->query("SHOW COLUMNS FROM tickets")->fetchAll(PDO::FETCH_COLUMN);
+                    if (!in_array('sla_exemption_reason', $cols)) {
+                        $pdo->exec("ALTER TABLE tickets ADD COLUMN `sla_exemption_reason` VARCHAR(255) NULL COMMENT 'Alasan Pengecualian SLA' AFTER `sla_status`");
+                    }
+                    if (!in_array('is_outage_massal', $cols)) {
+                        $pdo->exec("ALTER TABLE tickets ADD COLUMN `is_outage_massal` TINYINT(1) DEFAULT 0 COMMENT 'Flag Gangguan Massal' AFTER `sla_exemption_reason`");
+                    }
+                    if (!in_array('sla_paused_at', $cols)) {
+                        $pdo->exec("ALTER TABLE tickets ADD COLUMN `sla_paused_at` DATETIME NULL COMMENT 'Timestamp Jeda SLA' AFTER `is_outage_massal`");
+                    }
+                    if (!in_array('sla_paused_total_minutes', $cols)) {
+                        $pdo->exec("ALTER TABLE tickets ADD COLUMN `sla_paused_total_minutes` INT DEFAULT 0 COMMENT 'Total Akumulasi Jeda SLA Menit' AFTER `sla_paused_at`");
+                    }
+                    // Update enum sla_status jika belum ada 'exempted'
+                    $pdo->exec("ALTER TABLE tickets MODIFY COLUMN `sla_status` ENUM('pending', 'within_sla', 'breached', 'exempted') DEFAULT 'pending'");
+                } catch (Exception $ex) {
+                    // Ignore jika tabel belum di-create
+                }
+                $migrated = true;
+            }
         } catch (PDOException $e) {
             die("<div style='font-family:sans-serif; padding:20px; background:#ffebee; color:#c62828; border:1px solid #ef9a9a; border-radius:8px;'>
                 <h3>Gagal Terhubung ke Database!</h3>
@@ -106,6 +131,37 @@ function update_setting($key, $value) {
 }
 
 /**
+ * Daftar Klausul Standar Alasan Pengecualian SLA (SLA Exemption / Force Majeure)
+ */
+function get_sla_exemption_reasons() {
+    return [
+        'Kabel FO Backbone Putus Akibat Pihak Ketiga / Galian Proyek' => 'Kabel FO Backbone Putus Akibat Pihak Ketiga / Galian Proyek',
+        'Bencana Alam / Cuaca Ekstrem / Banjir / Gempa (Force Majeure)' => 'Bencana Alam / Cuaca Ekstrem / Banjir / Gempa (Force Majeure)',
+        'Pemadaman Listrik Massal PLN Melampaui Backup UPS & Genset'   => 'Pemadaman Listrik Massal PLN Melampaui Backup UPS & Genset',
+        'Gangguan Upstream Tier-1 / Submarine Cable Cut Internasional' => 'Gangguan Upstream Tier-1 / Submarine Cable Cut Internasional',
+        'Pemeliharaan Darurat Terjadwal (Emergency Maintenance Window)'=> 'Pemeliharaan Darurat Terjadwal (Emergency Maintenance Window)'
+    ];
+}
+
+/**
+ * Mendapatkan Info Broadcast Gangguan Massal yang Sedang Aktif
+ */
+function get_active_outage_broadcast() {
+    $active = (int)get_setting('outage_broadcast_active', 0);
+    if ($active !== 1) {
+        return null;
+    }
+    return [
+        'active'  => true,
+        'title'   => get_setting('outage_broadcast_title', 'Pemberitahuan: Gangguan Massal Jaringan Backbone Fiber Optic'),
+        'message' => get_setting('outage_broadcast_message', 'Sedang terjadi gangguan massal pada kabel fiber optic backbone. Tim Fiber Optic Splicer sedang melakukan perbaikan darurat di lokasi.'),
+        'area'    => get_setting('outage_broadcast_area', 'Seluruh Wilayah Terdampak'),
+        'eta'     => get_setting('outage_broadcast_eta', 'Sedang dalam Penanganan (ETA: 4 Jam)'),
+        'level'   => get_setting('outage_broadcast_level', 'danger')
+    ];
+}
+
+/**
  * Format Tanggal & Waktu ke Format Bahasa Indonesia
  */
 function format_date_indo($datetime, $with_time = true) {
@@ -150,10 +206,13 @@ function get_status_badge($status) {
 }
 
 /**
- * Render Badge Status SLA
+ * Render Badge Status SLA (Termasuk SLA Exempted / Force Majeure)
  */
-function get_sla_badge($sla_status, $deadline = null, $resolved_at = null) {
-    if ($sla_status === 'within_sla') {
+function get_sla_badge($sla_status, $deadline = null, $resolved_at = null, $exemption_reason = null) {
+    if ($sla_status === 'exempted') {
+        $title_attr = $exemption_reason ? ' title="Alasan Pengecualian: ' . htmlspecialchars($exemption_reason) . '"' : '';
+        return '<span class="badge" style="background:#7c3aed; color:#ffffff;"' . $title_attr . '><i class="fas fa-shield-alt me-1"></i> SLA Exempted (Force Majeure)</span>';
+    } elseif ($sla_status === 'within_sla') {
         return '<span class="badge bg-success"><i class="fas fa-clock me-1"></i> Tepat Waktu (On-Time SLA)</span>';
     } elseif ($sla_status === 'breached') {
         return '<span class="badge bg-danger"><i class="fas fa-exclamation-triangle me-1"></i> Terlambat (SLA Breached)</span>';

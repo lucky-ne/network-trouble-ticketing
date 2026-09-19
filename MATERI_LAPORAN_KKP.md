@@ -331,6 +331,10 @@ erDiagram
         datetime closed_at
         datetime sla_deadline
         enum sla_status
+        string sla_exemption_reason
+        boolean is_outage_massal
+        datetime sla_paused_at
+        int sla_paused_total_minutes
         int resolution_time_minutes
         text technician_notes
         string root_cause
@@ -369,20 +373,39 @@ erDiagram
 
 #### B. Rumus Matematis Evaluasi SLA
 
-1. **Penetapan Batas Waktu SLA (SLA Deadline)**:
+1. **Penetapan Batas Waktu SLA Awal (SLA Deadline)**:
    $$\text{SLA Deadline} = \text{created\_at} + (\text{sla\_hours} \times 3600\text{ detik})$$
 
-2. **Durasi Penanganan Riil (Resolution Time / MTTR)**:
-   $$\text{Resolution Time (Menit)} = \frac{\text{resolved\_at} - \text{created\_at}}{60}$$
+2. **Penyesuaian Batas Waktu SLA Saat Terjadi Jeda SLA (SLA Clock Pause)**:
+   Jika investigasi lapangan memerlukan jeda waktu (misal menunggu izin akses *entry permit* gedung dari pihak klien atau perbaikan tiang utilitas pihak ketiga), batas deadline SLA digeser:
+   $$\text{Adjusted SLA Deadline} = \text{SLA Deadline} + (\text{sla\_paused\_total\_minutes} \times 60\text{ detik})$$
 
-3. **Status Kepatuhan SLA Tiket**:
+3. **Durasi Penanganan Riil (Resolution Time / MTTR)**:
+   $$\text{Resolution Time (Menit)} = \frac{\text{resolved\_at} - \text{created\_at}}{60} - \text{sla\_paused\_total\_minutes}$$
+
+4. **Status Kepatuhan SLA Tiket**:
    $$\text{SLA Status} = \begin{cases} 
-   \text{Within SLA (Tepat Waktu)}, & \text{jika } \text{resolved\_at} \le \text{SLA Deadline} \\ 
-   \text{Breached SLA (Terlambat)}, & \text{jika } \text{resolved\_at} > \text{SLA Deadline} 
+   \text{Exempted (Dikecualikan)}, & \text{jika klaim Force Majeure / Gangguan Massal disetujui} \\
+   \text{Within SLA (Tepat Waktu)}, & \text{jika } \text{resolved\_at} \le \text{Adjusted SLA Deadline} \\ 
+   \text{Breached SLA (Terlambat)}, & \text{jika } \text{resolved\_at} > \text{Adjusted SLA Deadline} 
    \end{cases}$$
 
-4. **Persentase Kepatuhan SLA Perusahaan (SLA Compliance Rate %)**:
-   $$\text{Compliance Rate (\%)} = \left( \frac{\sum \text{Tiket Selesai Within SLA}}{\sum \text{Total Tiket Selesai}} \right) \times 100\%$$
+5. **Persentase Kepatuhan SLA Perusahaan (SLA Compliance Rate %)**:
+   Tiket dengan status `exempted` dikeluarkan dari faktor pembagi penalti agar tidak merugikan metrik ketersediaan kontrak (*Fair SLA Contract Rule*):
+   $$\text{Compliance Rate (\%)} = \left( \frac{\sum \text{Tiket Within SLA} + \sum \text{Tiket Exempted}}{\sum \text{Total Tiket Selesai}} \right) \times 100\%$$
+
+#### C. Mekanisme Penanganan Gangguan Massal (*Massive Outage*) & Pengecualian SLA (*SLA Exemption*)
+
+Pada kontrak penyediaan jaringan telekomunikasi B2B, terdapat klausul hukum **SLA Exclusions / Force Majeure**. Fitur ini diimplementasikan untuk menangani insiden eksternal di luar kendali teknisi PT. Visimedia Pratama Persada:
+1. **Emergency Outage Broadcast Banner**: NOC Helpdesk dapat memancarkan pengumuman darurat siaran (*live broadcast banner*) ke seluruh dashboard PIC Klien secara *real-time* ketika terjadi gangguan infrastruktur massal (contoh: *Core Backbone FO Cut*, pemeliharaan darurat upstream provider, atau gangguan gardu listrik PLN).
+2. **SLA Clock Pausing (Jeda SLA)**: Teknisi lapangan dapat menjeda penghitungan waktu SLA saat menunggu pihak ketiga atau perizinan gedung (*Building Management permit*), dan melanjutkannya (*resume*) saat pekerjaan teknis dapat diteruskan. Seluruh aksi jeda dicatat lengkap pada log audit sistem.
+3. **SLA Exemption Claiming**: Saat proses *resolve* tiket, teknisi dapat mengajukan status `exempted` dengan memilih salah satu dari alasan resmi industri:
+   - *Gangguan Massal / Backbone FO Cut Pihak Ketiga (Upstream ISP / Utility Work)*
+   - *Bencana Alam / Force Majeure (Banjir, Gempa, Cuaca Ekstrem, Kebakaran)*
+   - *Akses Lokasi Ditolak / Menunggu Izin PIC Klien (Customer Side Dependency)*
+   - *Pemadaman Listrik Area Luas (PLN Outage Tanpa Cadangan Genset Klien)*
+   - *Jadwal Pemeliharaan Resmi Terencana (Scheduled Maintenance Window)*
+4. **Perlindungan Evaluasi Kinerja (Technician & Corporate KPI Protection)**: Tiket berstatus `exempted` ditampilkan dengan lencana khusus *SLA Exempted* warna *cyan/info* dan otomatis tidak dihitung sebagai pelanggaran batas waktu (*Breached*) pada rekap laporan bulanan maupun evaluasi insentif teknisi.
 
 ---
 
@@ -395,43 +418,53 @@ c:\xampp\htdocs\ (Root Project)
 ├── Dockerfile                  # Konfigurasi container PHP 8.2 Apache
 ├── docker-compose.yml          # Orkestrasi multi-container (App, MariaDB, phpMyAdmin)
 ├── database.sql                # Skema database relasional & seed data demo
+├── index.php                   # Portal utama & auto-redirect role pengguna
+├── DEPLOY_DOCKER_UBUNTU.md     # Panduan deployment server Ubuntu Linux
+├── PANDUAN_MENJALANKAN.md      # Panduan instalasi lokal XAMPP & kredensial akun
+├── MATERI_LAPORAN_KKP.md       # Naskah lengkap & materi laporan KKP
 ├── config/
 │   └── database.php            # Koneksi PDO (Dual-mode auto-detect XAMPP/Docker)
 ├── includes/
-│   ├── auth_check.php          # Middleware proteksi sesi & RBAC role
-│   ├── header.php              # Komponen navigasi atas & sidebar
+│   ├── auth_check.php          # Middleware proteksi sesi & otorisasi RBAC role
+│   ├── header.php              # Komponen navigasi atas, status broadcast & global modal
 │   ├── footer.php              # Komponen footer & floating quick role switcher
-│   └── functions.php           # Helper format tanggal, badge SLA, dan status
+│   └── mailer.php              # Notifikasi email otomatis via SMTP / PHPMailer
 ├── auth/
 │   ├── login.php               # Halaman otentikasi login multi-role
-│   └── logout.php              # Terminasi sesi pengguna
+│   ├── logout.php              # Terminasi sesi pengguna
+│   └── login_*.php             # Shortcut login cepat pengujian (admin, helpdesk, teknisi, manager, customer)
 ├── customer/                   # Modul PIC Klien Korporat B2B
-│   ├── index.php               # Dashboard & live status sirkit
-│   ├── create.php              # Formulir pengajuan tiket gangguan
-│   ├── view.php                # Detail tracking, konfirmasi closed & cetak BA
-│   └── history.php             # Arsip riwayat tiket perusahaan
+│   ├── dashboard.php           # Dashboard live status sirkit & ringkasan tiket aktif
+│   ├── buat_tiket.php          # Redirect / handler pembuatan tiket gangguan
+│   ├── modal_buat_tiket.php    # Form modal pengajuan tiket kendala sirkit
+│   ├── detail_tiket.php        # Tracking real-time, konfirmasi closed & cetak BA
+│   └── riwayat_tiket.php       # Arsip riwayat tiket perusahaan klien
 ├── helpdesk/                   # Modul NOC Helpdesk & Dispatcher
-│   ├── index.php               # Queue monitor & statistik tiket aktif
-│   ├── assign.php              # Disposisi tiket & pengaturan SLA
-│   ├── view.php                # Detail investigasi tiket
+│   ├── dashboard.php           # Queue monitor, kontrol broadcast & statistik tiket aktif
+│   ├── kelola_tiket.php        # Disposisi tiket ke teknisi & penyesuaian parameter SLA
+│   ├── master_data.php         # Master data klien & sirkit (CID) untuk NOC
 │   └── cetak_tiket.php         # Cetak Work Order & Berita Acara (A4 Portrait)
 ├── teknisi/                    # Modul Field / Network Engineer
-│   ├── index.php               # Daftar tugas penanganan gangguan
-│   ├── process.php             # Form eksekusi troubleshooting & berita acara
-│   └── view.php                # Detail riwayat pekerjaan teknisi
+│   ├── dashboard.php           # Antrian tugas aktif troubleshooting (Assigned & In Progress)
+│   ├── proses_tiket.php        # Lembar kerja eksekusi, jeda waktu SLA, klaim exemption & form Berita Acara
+│   └── riwayat_tugas.php       # Arsip tugas selesai (Resolved/Closed) & rekap performa teknisi
 ├── manager/                    # Modul Head of NOC / IT Executive
-│   ├── index.php               # Executive SLA compliance dashboard & MTTR
-│   ├── laporan.php             # Filter rekapitulasi performa SLA bulanan
-│   ├── kinerja_teknisi.php     # Matriks produktivitas teknisi
-│   ├── cetak_laporan.php       # Cetak Rekap SLA Bulanan (A4 Landscape)
-│   └── cetak_kinerja_teknisi.php # Cetak Kinerja Teknisi (A4 Portrait)
-└── admin/                      # Modul Administrator Master
-    ├── index.php               # System overview dashboard
-    ├── clients.php             # CRUD data perusahaan klien & Circuit ID
-    ├── users.php               # CRUD master akun pengguna
-    ├── categories.php          # CRUD kategori gangguan
-    ├── priorities.php          # CRUD parameter SLA & warna badge
-    └── settings.php            # Konfigurasi identitas perusahaan
+│   ├── dashboard.php           # Executive SLA compliance dashboard & grafik ketersediaan
+│   ├── kinerja_teknisi.php     # Matriks produktivitas teknisi & rasio ketepatan SLA
+│   ├── cetak_laporan.php       # Cetak Rekap SLA Bulanan Korporat (A4 Landscape)
+│   └── cetak_kinerja_teknisi.php # Cetak Evaluasi Kinerja Teknisi (A4 Portrait)
+├── admin/                      # Modul Administrator Master
+│   ├── dashboard.php           # System overview & ringkasan infrastruktur
+│   ├── semua_tiket.php         # Monitoring seluruh tiket lintas perusahaan & aksi kontrol
+│   ├── kelola_klien.php        # CRUD data perusahaan klien & Circuit ID (CID)
+│   ├── kelola_user.php         # CRUD master akun pengguna (5 Role RBAC)
+│   ├── kelola_kategori.php     # CRUD kategori layanan gangguan
+│   ├── kelola_prioritas.php    # CRUD parameter SLA & warna badge tingkat urgensi
+│   ├── pengaturan_website.php  # Konfigurasi identitas perusahaan, SMTP, & maintenance
+│   └── log_aktivitas.php       # Audit trail riwayat aktivitas pengguna
+└── assets/
+    └── css/
+        └── style.css           # Styling kustom (Zinc Precision UI, Table Compact, Badge SLA)
 ```
 
 ---
@@ -467,9 +500,12 @@ Aplikasi dikemas dalam arsitektur *container* modern untuk memastikan portabilit
 | 3 | **Pelaporan Tiket B2B** | PIC Klien mengisi form gangguan dan klik submit. | Tiket tersimpan dengan status `open` dan batas `sla_deadline` terkalkulasi otomatis. | **Valid** |
 | 4 | **Disposisi NOC Helpdesk** | Helpdesk menugaskan tiket ke Field Engineer tertentu. | Status tiket berubah jadi `assigned` dan tercatat di riwayat `ticket_logs`. | **Valid** |
 | 5 | **Troubleshooting Teknisi** | Teknisi klik *Mulai Kerjakan*. | Status tiket berubah jadi `in_progress` dan `started_at` tercatat. | **Valid** |
-| 6 | **Penyelesaian Tiket & SLA** | Teknisi mengisi Berita Acara (*Root Cause*) dan klik *Selesaikan*. | Status menjadi `resolved`, `resolved_at` terkunci, dan `sla_status` ditetapkan otomatis (*Within SLA/Breached*). | **Valid** |
-| 7 | **Konfirmasi Penutupan** | PIC Klien klik *Konfirmasi & Tutup Tiket*. | Status menjadi `closed`, `closed_at` tercatat, dan tiket masuk ke arsip riwayat. | **Valid** |
-| 8 | **Executive SLA Report** | Manager memfilter laporan berdasarkan PT Klien dan klik Cetak. | Tampil dokumen A4 resmi ber-kop surat dengan persentase kepatuhan SLA valid. | **Valid** |
+| 6 | **Jeda Waktu SLA (Clock Pause)** | Teknisi klik *Jeda Waktu SLA* saat menunggu perizinan gedung klien. | Waktu jeda tercatat, deadline SLA disesuaikan, dan status pause tertera di audit log. | **Valid** |
+| 7 | **Penyelesaian Tiket & SLA** | Teknisi mengisi Berita Acara (*Root Cause*) dan klik *Selesaikan*. | Status menjadi `resolved`, `resolved_at` terkunci, dan `sla_status` ditetapkan otomatis (*Within SLA/Breached*). | **Valid** |
+| 8 | **Klaim SLA Exemption** | Teknisi mengaktifkan switch *Klaim Pengecualian SLA* dengan alasan *Backbone FO Cut*. | Tiket tersimpan dengan `sla_status = 'exempted'` dan tidak dihitung penalti breach. | **Valid** |
+| 9 | **Broadcast Gangguan Massal** | Helpdesk mengaktifkan Siaran Darurat Gangguan Massal dari dashboard NOC. | Banner merah siaran darurat tampil live di seluruh dashboard PIC Klien & Helpdesk. | **Valid** |
+| 10 | **Konfirmasi Penutupan** | PIC Klien klik *Konfirmasi & Tutup Tiket*. | Status menjadi `closed`, `closed_at` tercatat, dan tiket masuk ke arsip riwayat. | **Valid** |
+| 11 | **Executive SLA Report** | Manager memfilter laporan berdasarkan PT Klien dan klik Cetak. | Tampil dokumen A4 resmi ber-kop surat dengan persentase kepatuhan SLA valid & rincian exempted. | **Valid** |
 
 ---
 
@@ -478,8 +514,9 @@ Aplikasi dikemas dalam arsitektur *container* modern untuk memastikan portabilit
 ### 5.1 Kesimpulan
 1. Telah berhasil dirancang dan dibangun **Sistem Informasi Network Trouble Ticketing Berbasis Web** pada PT. Visimedia Pratama Persada yang mampu mengelola pelaporan keluhan gangguan sirkit jaringan B2B secara terpusat dan terstruktur.
 2. Sistem berhasil mengotomatisasi pemantauan batas toleransi *Service Level Agreement* (SLA) berdasarkan 4 tingkat prioritas (*Critical, High, Medium, Low*) serta mengukur rasio kepatuhan penanganan (*SLA Compliance Rate %*) secara akurat.
-3. Fitur cetak dokumen digital telah distandarisasi menggunakan format A4 ber-kop resmi korporat dan dilengkapi panel validasi digital sistemik (*Paperless System Validation*).
-4. Penerapan teknologi Docker dan CI/CD GitHub Actions berhasil mempermudah deployment dan pemeliharaan sistem di server produksi Ubuntu Linux secara otomatis dan konsisten.
+3. Fitur penanganan **Gangguan Massal (*Massive Outage*) & Pengecualian SLA (*SLA Exemption / Force Majeure*)** berhasil diintegrasikan dengan mekanisme *SLA Clock Pausing*, *Emergency Broadcast Banner*, dan *Fair SLA Calculation* sehingga tidak merugikan metrik ketersediaan kontrak bisnis.
+4. Fitur cetak dokumen digital telah distandarisasi menggunakan format A4 ber-kop resmi korporat dan dilengkapi panel validasi digital sistemik (*Paperless System Validation*).
+5. Penerapan teknologi Docker dan CI/CD GitHub Actions berhasil mempermudah deployment dan pemeliharaan sistem di server produksi Ubuntu Linux secara otomatis dan konsisten.
 
 ### 5.2 Saran Pengembangan
 1. **Integrasi WhatsApp Business API Gateway**: Menambahkan notifikasi instan langsung ke nomor WhatsApp PIC Klien dan Field Engineer saat terjadi update status tiket.
@@ -512,17 +549,30 @@ Gunakan bank pertanyaan dan jawaban komprehensif ini untuk mempersiapkan diri me
 * **T: Sebutkan 5 hak akses peran (role) dalam sistem ini dan jelaskan fungsinya!**
   > **J:**
   > 1. **PIC Klien Korporat (Customer)**: Menerbitkan tiket gangguan sirkit, memantau live progress, dan melakukan konfirmasi penutupan (*Close*).
-  > 2. **NOC Helpdesk (Dispatcher)**: Memvalidasi tiket masuk, mengatur batas prioritas SLA, dan mendisposisikan penugasan ke Field Engineer.
-  > 3. **Field / Network Engineer**: Menerima lembar kerja, mengubah status ke *In Progress*, mengisi Berita Acara (*Root Cause & Action Taken*), dan menyelesaikan tiket (*Resolved*).
-  > 4. **Head of NOC / IT Manager**: Memantau ringkasan statistik SLA per-klien korporat, rata-rata MTTR, dan mencetak Laporan Bulanan Resmi.
+  > 2. **NOC Helpdesk (Dispatcher)**: Memvalidasi tiket masuk, mengatur batas prioritas SLA, memancarkan pengumuman gangguan massal, dan mendisposisikan penugasan ke Field Engineer.
+  > 3. **Field / Network Engineer**: Menerima lembar kerja, mengubah status ke *In Progress*, melakukan jeda SLA jika ada kendala eksternal, mengisi Berita Acara (*Root Cause & Action Taken*), dan menyelesaikan tiket (*Resolved*).
+  > 4. **Head of NOC / IT Manager**: Memantau ringkasan statistik SLA per-klien korporat, evaluasi tiket exempted, rata-rata MTTR, dan mencetak Laporan Bulanan Resmi.
   > 5. **Administrator Master**: Mengelola master data perusahaan klien, nomor sirkit, user multi-role, kategori gangguan, dan parameter SLA.
 
 ---
 
-#### 📌 Kategori 3: Logika Bisnis & Kalkulasi SLA
+#### 📌 Kategori 3: Logika Bisnis, Gangguan Massal & Kalkulasi SLA
 
-* **T: Bagaimana sistem menentukan apakah penanganan tiket berstatus "Within SLA" atau "Breached"?**
-  > **J:** Saat tiket dibuat (`created_at`), sistem menambahkan batas jam prioritas gangguan untuk menghasilkan `sla_deadline`. Ketika Field Engineer menyelesaikan perbaikan, sistem mengunci timestamp `resolved_at`. Jika $\text{resolved\_at} \le \text{sla\_deadline}$, maka tiket otomatis berstatus **Within SLA (Tepat Waktu)**. Jika $\text{resolved\_at} > \text{sla\_deadline}$, sistem otomatis mengklasifikasikan tiket sebagai **Breached (Terlambat)**.
+* **T: Bagaimana sistem menentukan apakah penanganan tiket berstatus "Within SLA", "Breached", atau "Exempted"?**
+  > **J:** 
+  > 1. Saat tiket dibuat (`created_at`), sistem menghitung batas waktu `sla_deadline` dari jam prioritas gangguan.
+  > 2. Jika teknisi melakukan *SLA Clock Pause* (misal menunggu izin akses gedung klien), batas SLA digeser otomatis sesuai total menit jeda.
+  > 3. Ketika perbaikan selesai (`resolved_at`), jika teknisi mengklaim alasan resmi *Force Majeure / Backbone Cut*, status ditetapkan menjadi **SLA Exempted**.
+  > 4. Jika tidak ada klaim pengecualian dan $\text{resolved\_at} \le \text{Adjusted SLA Deadline}$, tiket berstatus **Within SLA (Tepat Waktu)**.
+  > 5. Jika $\text{resolved\_at} > \text{Adjusted SLA Deadline}$, sistem mengklasifikasikan sebagai **Breached (Terlambat)**.
+
+* **T: Bagaimana perlakuan sistem terhadap SLA jika terjadi gangguan massal akibat faktor eksternal / Force Majeure (misalnya kabel fiber optik backbone putus karena galian utilitas jalan atau bencana alam) yang memakan waktu perbaikan lama?**
+  > **J:**
+  > Dalam kontrak industri telekomunikasi B2B terdapat klausul hukum **SLA Exclusions**. Sistem ini menyelesaikannya melalui 4 mekanisme:
+  > 1. **Emergency Outage Broadcast**: Helpdesk mengaktifkan siaran darurat ke dashboard seluruh PIC Klien agar mereka langsung mengetahui status pemulihan tanpa membanjiri antrian tiket.
+  > 2. **SLA Clock Pausing**: Teknisi dapat menghentikan sementara perhitungan waktu SLA saat menunggu koordinasi pihak ketiga.
+  > 3. **SLA Exemption Marking**: Tiket ditandai sebagai `sla_status = 'exempted'` dengan mencantumkan alasan resmi (*Root Cause / Third-party dependency*).
+  > 4. **Fair SLA Calculation**: Pada perhitungan *SLA Compliance Rate %* dan Laporan Bulanan Manajemen, tiket berstatus `exempted` **dikecualikan dari penalti breach**, sehingga target ketersediaan kontrak dan evaluasi kinerja teknisi tidak dirugikan secara sepihak oleh faktor di luar kendali (*force majeure*).
 
 * **T: Mengapa saat tiket berstatus "Closed", tombol aksi di Helpdesk berubah menjadi read-only (Detail & Cetak)?**
   > **J:** Untuk menjaga **integritas data audit (*data integrity*)**. Tiket yang sudah berstatus `closed` menandakan bahwa perbaikan jaringan telah selesai dan telah disetujui secara final oleh PIC Klien. Oleh karena itu, data teknis, waktu pengerjaan, dan parameter SLA dikunci agar tidak dapat diubah kembali (*immutable record*).
