@@ -213,30 +213,31 @@ include __DIR__ . '/../includes/header.php';
         <span class="badge bg-danger"><?= count($urgent_tickets) ?> Tiket Perlu Tindakan</span>
     </div>
     <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-b2b table-hover align-middle datatable w-100">
-                <thead>
-                    <tr>
-                        <th style="width: 140px;">No. Tiket</th>
-                        <th style="width: 160px;">Perusahaan Klien</th>
-                        <th style="width: 150px;">Sirkit (CID) & Layanan</th>
-                        <th>Kendala Jaringan</th>
-                        <th style="width: 130px;">Prioritas SLA</th>
-                        <th style="width: 110px;">Status</th>
-                        <th style="width: 140px;">Sisa Waktu SLA</th>
-                        <th style="width: 140px;">Field Engineer</th>
-                        <th style="width: 120px;" class="text-center">Aksi Disposisi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($urgent_tickets)): ?>
+        <?php if (empty($urgent_tickets)): ?>
+            <div class="text-center py-5">
+                <div class="rounded-circle bg-success bg-opacity-10 d-inline-flex p-3 mb-3 text-success">
+                    <i class="fas fa-check-circle fa-2x"></i>
+                </div>
+                <h6 class="fw-bold text-dark mb-1">Luar Biasa! Tidak Ada Antrian Tiket Gangguan</h6>
+                <p class="text-muted small mb-0">Semua sirkit beroperasi normal dan tidak ada tiket gangguan yang pending saat ini.</p>
+            </div>
+        <?php else: ?>
+            <div class="table-responsive">
+                <table class="table table-b2b table-hover align-middle datatable w-100 mb-0">
+                    <thead>
                         <tr>
-                            <td colspan="9" class="text-center py-4 text-muted">
-                                <i class="fas fa-check-circle fa-2x text-success mb-2 d-block"></i>
-                                Luar biasa! Tidak ada antrian tiket gangguan sirkit yang pending saat ini.
-                            </td>
+                            <th style="width: 140px;">No. Tiket</th>
+                            <th style="width: 160px;">Perusahaan Klien</th>
+                            <th style="width: 150px;">Sirkit (CID) & Layanan</th>
+                            <th>Kendala Jaringan</th>
+                            <th style="width: 130px;">Prioritas SLA</th>
+                            <th style="width: 110px;">Status</th>
+                            <th style="width: 140px;">Sisa Waktu SLA</th>
+                            <th style="width: 140px;">Field Engineer</th>
+                            <th style="width: 120px;" class="text-center">Aksi Disposisi</th>
                         </tr>
-                    <?php else: ?>
+                    </thead>
+                    <tbody>
                         <?php foreach ($urgent_tickets as $t): 
                             $clean_tech_name = preg_replace('/\s*\(.*?\)/', '', $t['technician_name'] ?? '');
                         ?>
@@ -377,10 +378,10 @@ include __DIR__ . '/../includes/header.php';
                                 </td>
                             </tr>
                         <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
